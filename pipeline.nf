@@ -2,39 +2,61 @@
 
 
 genomes = Channel.fromFilePairs(params.path_to_reads)
-gen = Channel.fromFilePairs(params.path_to_reads)
+genomes.into { raw_data_for_Fastp; raw_data_for_trimmomatic }
 
 process fastp{
 	
-	publishDir './Results/', mode: 'copy'
+	publishDir './Results/Fastp/', mode: 'copy'
 	
 	input:
-	tuple sampleID, file(reads) from gen
+	tuple sampleID, file(reads) from raw_data_for_Fastp
 	
 	output:
-	file "Fastp/$sampleID" optional true into fastp_output
-	val "$sampleID" into fastp_id_name
+	file "${sampleID}/*.gz" into fastp_trimmed
+	file "${sampleID}" into fastp_reports
+	val "${sampleID}" into fastp_id_name
 	stdout result
 	
 	script:
 	
 	if ( params.fastp == true && params.fastp_trim == true )
-		
+
 		"""
-		mkdir Fastp
-		mkdir Fastp/${sampleID}
-		cd Fastp/${sampleID}
-		fastp -i ../../${reads[0]} -I ../../${reads[1]} -o ${sampleID}_R1_trimmed_fastp.fq.gz -O ${sampleID}_R2_trimmed_fastp.fq.gz
-		cd ../..
+		mkdir ${sampleID}
+		mkdir ${sampleID}/Reports
+		cd ${sampleID}
+		fastp -i ../${reads[0]} -I ../${reads[1]} -o ${sampleID}_R1_trimmed_fastp.fq.gz -O ${sampleID}_R2_trimmed_fastp.fq.gz
+		mv fastp* ./Reports
 		"""
 		
 	else if ( params.trimmomatic == false && params.fastp == false )
 
 		"""
 		echo "Trimming turned off"
-		"""
+		mkdir ${sampleID}
+		mv ${reads[0]} ${reads[1]} ${sampleID}/.
+		"""		
+}
+
+process trimmomatic{
+
+	publishDir './Results/Trimmomatic/', mode: 'copy'
 	
-		
+	input:
+	tuple sampleID, file(reads) from raw_data_for_trimmomatic 
+	
+	output:
+	file "${sampleID}/*_paired.fq.gz" into trimmomatic_output 
+	
+	when:
+	params.trimmomatic == true
+	
+	"""
+	mkdir ${sampleID}
+	cd ${sampleID}
+	trimmomatic PE ${reads[0]} ${reads[0]} ${reads[0]}_paired.fq.gz ${reads[0]}_unpaired.fq.gz ${reads[1]}_paired.fq.gz ${reads[1]}_unpaired.fq.gz LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+	"""
+
 }
 
 process spades{
@@ -42,26 +64,27 @@ process spades{
 	publishDir './Results/SPAdes', mode: 'copy'
 
 	input:
-	tuple sampleID, file(reads) from genomes
-	file sampleID_trim from fastp_output
+	file sampleID from fastp_trimmed
+	
+	val sample from fastp_id_name
+
 	
 	output:
-	file "${sampleID}/*_scaffolds.fasta" into spades_output
-	file "${sampleID}/*" into all_spades
-	val "$sampleID" into spades_id_name 
- 	
+	file "${sample}/*_scaffolds.fasta" into spades_output
+	file "${sample}/*" into spades_all
+	val "$sample" into spades_id_name 
  	
  	script:
  	if ( params.trimmomatic == false && params.fastp == false )
 		"""
-		spades.py -1 ${reads[0]} -2 ${reads[1]} --only-assembler -o $sampleID
-		mv ${sampleID}/scaffolds.fasta ${sampleID}/${sampleID}_scaffolds.fasta 
+		spades.py -1 ${sampleID[0]} -2 ${sampleID[1]} --only-assembler -o $sample 
+		mv ${sample}/scaffolds.fasta ${sample}/${sample}_scaffolds.fasta
 		"""
 	else if ( params.fastp_trim == true ) 
 	
 		"""
-		spades.py -1 ${sampleID_trim}_R1_trimmed_fastp.fq.gz -2 ${sampleID_trim}_R2_trimmed_fastp.fq.gz --only-assembler -o $sampleID
-		mv ${sampleID}/scaffolds.fasta ${sampleID}/${sampleID}_trimmed__fastp_scaffolds.fasta
+		spades.py -1 ${sampleID[0]} -2 ${sampleID[1]} --only-assembler -o $sample
+		mv ${sample}/scaffolds.fasta ${sample}/${sample}_trimmed_fastp_scaffolds.fasta
 		"""
 
 }
