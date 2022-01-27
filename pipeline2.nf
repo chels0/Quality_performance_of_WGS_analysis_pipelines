@@ -2,30 +2,96 @@
 
 
 genomes = Channel.fromFilePairs(params.path_to_reads)
-genomes.into { raw_data_for_Fastp; raw_data_for_trimmomatic; raw_data_for_spades }
+genomes.into { raw_data_for_Fastp; raw_data_for_trimmomatic; raw_data_for_spades; raw_data_for_bowtie2 ; raw_data_for_fastqc}
 
+reference = Channel.fromPath(params.path_to_reference)
+reference.into { ref_for_bowtie2; ref_for_quast }
+
+
+
+if ( params.fastp_qc == true && params.fastp_trim_qc == false )
+	folder = Channel.from('No_trimming')
+	
+else if ( params.fastp_trim_qc  == true || (params.fastp_trim_qc == true && params.fastp_qc == true))
+	folder = Channel.from('Trimmed_w_Fastp')
+	
 process fastp{
 	
-	publishDir './Results/Trimmed_w_Fastp/Fastp/', mode: 'copy'
+	publishDir './Results/', mode: 'copy'
 	
 	input:
 	tuple sampleID, file(reads) from raw_data_for_Fastp
+	val folders from folder.collect()
 	
 	output:
-	file "${sampleID}/*.gz" into fastp_trimmed
-	file "${sampleID}" into fastp_reports
+	file "${folders[0]}/${sampleID}/*.gz" into fastp_trimmed
+	file "${folders[0]}/${sampleID}" into fastp_reports
 	val "${sampleID}" into fastp_id_name
-	stdout result
 	
 	when:
-	params.fastp == true
+	params.fastp_trim_qc == true || params.fastp_qc == true
+	
+	script:
+	if ( params.fastp_trim_qc  == true || (params.fastp_trim_qc == true && params.fastp_qc == true) )
 
+		"""
+		mkdir Trimmed_w_Fastp
+		mkdir Trimmed_w_Fastp/${sampleID}
+		mkdir Trimmed_w_Fastp/${sampleID}/Reports
+		cd Trimmed_w_Fastp/${sampleID}
+		fastp -i ../../${reads[0]} -I ../../${reads[1]} -o ${sampleID}_R1_trimmed_fastp.fq.gz -O ${sampleID}_R2_trimmed_fastp.fq.gz
+		mv fastp* ./Reports
+		"""
+	
+	else if ( params.fastp_qc == true && params.fastp_trim_qc == false )
+	
+		"""
+		mkdir ${folders[0]}
+		mkdir ${folders[0]}/${sampleID}
+		mkdir ${folders[0]}/${sampleID}/Reports
+		cd ${folders[0]}/${sampleID}
+		fastp -A -L -Q -G -i ../../${reads[0]} -I ../../${reads[1]} -o ${reads[0]} -O ${reads[1]}
+		mv fastp* ./Reports
+		""" 
+	
+}
+
+process fastqc_post_fastp_trim {
+	
+	publishDir './Results/Trimmed_w_Fastp/FastQC_post_trim', mode: 'copy'
+	
+	input:
+	file sample from 
+	val sampleID from id_name_for_FastQC
+	
+	output:
+	file "${sampleID}/*" into fastqc_raw
+	
+	script:
+	if ( params.fastp_trim_qc  == true || (params.fastp_trim_qc == true && params.fastp_qc == true) )
+	
 	"""
 	mkdir ${sampleID}
-	mkdir ${sampleID}/Reports
-	cd ${sampleID}
-	fastp -i ../${reads[0]} -I ../${reads[1]} -o ${sampleID}_R1_trimmed_fastp.fq.gz -O ${sampleID}_R2_trimmed_fastp.fq.gz
-	mv fastp* ./Reports
+	fastqc ${sample[0]} ${sample[1]} --outdir ${sampleID}
+
+	"""
+}
+
+process fastqc_raw {
+	
+	publishDir './Results/FastQC_Raw_reads', mode: 'copy'
+	
+	input:
+	tuple sampleID, file(reads) from raw_data_for_fastqc
+	
+	output:
+	file "${sampleID}/*" into fastqc_raw_output
+	
+	
+	"""
+	mkdir ${sampleID}
+	fastqc ${reads[0]} ${reads[1]} --outdir ${sampleID}
+
 	"""
 }
 
@@ -51,6 +117,28 @@ process trimmomatic{
 
 }
 
+trimmomatic_output.into { trimmomatic_output_for_SPAdes ; trimmomatic_output_for_FastQC }
+id_name_trimmomatic.into { id_name_for_SPAdes ; id_name_for_FastQC }
+
+process fastqc_post_trimmomatic {
+	
+	publishDir './Results/Trimmed_w_Trimmomatic/FastQC_post_trim', mode: 'copy'
+	
+	input:
+	file sample from trimmomatic_output_for_FastQC
+	val sampleID from id_name_for_FastQC
+	
+	output:
+	file "${sampleID}/*" into fastqc_raw
+	
+	
+	"""
+	mkdir ${sampleID}
+	fastqc ${sample[0]} ${sample[1]} --outdir ${sampleID}
+
+	"""
+}	
+
 process spades_after_fastp{
 	
 	publishDir './Results/Trimmed_w_Fastp/SPAdes', mode: 'copy'
@@ -65,7 +153,7 @@ process spades_after_fastp{
 	val "$sample" into spades_id_name_fastp 
  	
  	when:
- 	params.fastp == true
+ 	params.fastp_trim_qc == true || params.trimmomatic == false
  	
  	"""
 	spades.py -1 ${sampleID[0]} -2 ${sampleID[1]} --only-assembler -o $sample
@@ -74,13 +162,15 @@ process spades_after_fastp{
 
 }
 
+spades_id_name_fastp.into { id_name_trim ; id_name_no_trim }
+
 process spades_after_trimmomatic{
 	
 	publishDir './Results/Trimmed_w_Trimmomatic/SPAdes', mode: 'copy'
 
 	input:
-	file sampleID from trimmomatic_output
-	val sample from id_name_trimmomatic
+	file sampleID from trimmomatic_output_for_SPAdes
+	val sample from id_name_for_SPAdes
 
 	output:
 	file "${sample}/*_scaffolds.fasta" into spades_output_trimmomatic
@@ -98,35 +188,45 @@ process spades_after_trimmomatic{
 
 }
 
-process spades_no_trimming{
+
+spades_output_fastp.into { spades_output_for_quast_no_trim ; spades_output_for_quast_trim ; spades_output_fastp_for_pilon }
+
+process bowtie2_no_trimming {
+
+	publishDir './Results/No_trimming/Bowtie2', mode: 'copy'
 	
-	publishDir './Results/No_trimming/SPAdes', mode: 'copy'
-
 	input:
-	tuple sampleID, file(reads) from raw_data_for_spades
-
+	//file scaffold from spades_output
+	file reference from ref_for_bowtie2.collect()
+	tuple sampleID, file(reads) from raw_data_for_bowtie2
+	
 	output:
-	file "${sampleID}/*_scaffolds.fasta" into spades_output
-	file "${sampleID}/*" into spades_all
-	val "$sampleID" into spades_id_name 
- 	
- 	when:
- 	params.no_trim == true
-
+	file "${sampleID}/*" into bowtie_all
+	val "${sampleID}" into bowtie_id_name
+	stdout result2
+	
+	when:
+	params.assembly_improvement == true
+	
+	script:
+	// Tar bort allt som har med bowtie index att göra på ett av namnen så endast namnet är med
+	index_base = reference[0].toString() - ~/.rev.\d.bt2|.\d.bt2/
+	
 	"""
-	spades.py -1 ${reads[0]} -2 ${reads[1]} --only-assembler -o $sampleID 
-	mv ${sampleID}/scaffolds.fasta ${sampleID}/${sampleID}_scaffolds.fasta
+	mkdir ${sampleID}
+	bowtie2 -x ${index_base} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}/${sampleID}_sorted_alignment.bam
+	samtools index ${sampleID}/${sampleID}_sorted_alignment.bam
 	"""
-
 }
+
 
 process quast_no_trimming{
 	
 	publishDir './Results/No_trimming/Quast', mode: 'copy'
 
 	input:
-	file scaffold from spades_output
-	val sampleID from spades_id_name
+	file scaffold from spades_output_for_quast_no_trim
+	val sampleID from id_name_no_trim
 	
 	output:
 	file "$sampleID" into quast_output
@@ -142,8 +242,8 @@ process quast_after_fastp{
 	publishDir './Results/Trimmed_w_Fastp/Quast', mode: 'copy'
 
 	input:
-	file scaffold from spades_output_fastp
-	val sampleID from spades_id_name_fastp
+	file scaffold from spades_output_for_quast_trim
+	val sampleID from id_name_trim
 	
 	output:
 	file "$sampleID" into quast_output_fastp
@@ -172,4 +272,4 @@ process quast_after_trimmomatic{
 }
 
 
-result.view { it }
+result2.view { it }

@@ -1,0 +1,26 @@
+/*
+	process pilon {
+
+	publishDir './Results/No_trimming/Pilon', mode: 'copy'
+	
+	input:
+	file scaffold from spades_output_for_pilon
+	file alignment from bowtie_all.collect()
+	val sampleID from bowtie_id_name
+	
+	
+	output:
+	file "${sampleID}/${sampleID}*" into pilon_output
+	
+	script:
+	// ta bort bam ändelsen
+	bam_file = alignment[0].toString() - ~/.bam*/
+
+	
+	"""
+	mkdir ${sampleID}
+	pilon --genome ${scaffold} --frags ${bam_file}.bam --output ${sampleID}/${sampleID}
+	"""
+
+}
+*/
