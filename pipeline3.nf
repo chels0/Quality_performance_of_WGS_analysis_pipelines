@@ -9,10 +9,10 @@ reference.into { ref_for_bowtie2; ref_for_quast }
 
 
 
-if ( params.fastp_qc == true && params.fastp_trim_qc == false )
+if ( params.fastp_trim_qc == false )
 	folder = Channel.from('No_trimming')
 	
-else if ( params.fastp_trim_qc  == true || (params.fastp_trim_qc == true && params.fastp_qc == true))
+else if ( params.fastp_trim_qc  == true )
 	folder = Channel.from('Trimmed_w_Fastp')
 	
 process fastp{
@@ -28,11 +28,8 @@ process fastp{
 	file "${folders[0]}/${sampleID}" into fastp_reports
 	val "${sampleID}" into fastp_id_name
 	
-	when:
-	params.fastp_trim_qc == true || params.fastp_qc == true
-	
 	script:
-	if ( params.fastp_trim_qc  == true || (params.fastp_trim_qc == true && params.fastp_qc == true) )
+	if ( params.fastp_trim_qc  == true )
 
 		"""
 		mkdir ${folders[0]}
@@ -43,7 +40,7 @@ process fastp{
 		mv fastp* ./Reports
 		"""
 	
-	else if ( params.fastp_qc == true && params.fastp_trim_qc == false )
+	else if ( params.fastp_trim_qc == false )
 	
 		"""
 		mkdir ${folders[0]}
@@ -61,7 +58,7 @@ fastp_id_name.into { fastp_id_name_fastqc ; fastp_id_name_SPAdes }
 
 process fastqc_post_fastp_trim {
 	
-	publishDir './Results/Trimmed_w_Fastp/FastQC_post_trim', mode: 'copy'
+	publishDir './Results/${folders[0]/FastQC_post_trim', mode: 'copy'
 	
 	input:
 	file sample from fastp_trimmed_fastqc
