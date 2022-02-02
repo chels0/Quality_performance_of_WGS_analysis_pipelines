@@ -7,20 +7,40 @@ Created on Fri Jan 28 11:05:08 2022
 """
 
 import pandas as pd
-df_files= pd.read_csv('/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/FastQC_Raw_reads/PT28-1-18/PT28-1-18_R1_fastqc/xx03_updated.csv', sep=' ')
+import numpy as np
+df_files= pd.read_csv('xx03.csv', sep=' ')
 
-small = df_files[df_files['Mean'] < 28]
+splt = np.array_split(df_files, 2)
 
-to_cut = small['#Base'].tolist()
+small_end = splt[1]
+small_end = small_end[small_end['Mean'] < 28]
 
-for value in to_cut:
-    to_cut = value.split('-')
+to_cut_end = small_end['#Base'].tolist()
 
-kuk = []
+list_of_values= []
 
-for i in range(len(to_cut)):
-    kuk.append(int(to_cut[i]))
+for value in to_cut_end:
+    to_cut_end = value.split('-')
+    list_of_values.append(to_cut_end[0])
+    list_of_values.append(to_cut_end[1])    
 
-cut = min(kuk)    
+list_end = []
+    
+for i in range(len(list_of_values)):
+    list_end.append(int(list_of_values[i]))
 
-print(cut)    
+if not list_end:
+    trail = 1
+else:
+    min_end = min(list_end)
+    max_end = max(list_end)
+    trail = max_end - min_end
+
+if trail > 20:
+    trail = 20
+else:
+    trail = 28
+    
+print(trail)
+
+    

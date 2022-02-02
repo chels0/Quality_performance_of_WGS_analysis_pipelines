@@ -17,6 +17,7 @@ else if ( params.fastp_trim_qc  == true )
 
 folder = Channel.from(folder_name)
 
+scripts_folder = Channel.value(params.path_to_scripts)
 
 process fastqc_raw {
 	
@@ -24,16 +25,59 @@ process fastqc_raw {
 	
 	input:
 	tuple sampleID, file(reads) from raw_data_for_fastqc
-	
+	val script_folder from scripts_folder
+
 	output:
 	file "${sampleID}/*" into fastqc_raw_output
+	file "${sampleID}/result.txt" into trimmomatic_input
 	
+	script:
+	if ( params.trimmomatic == true )
 	
-	"""
-	mkdir ${sampleID}
-	fastqc ${reads[0]} ${reads[1]} --outdir ${sampleID}
-
-	"""
+		"""
+		mkdir ${sampleID}
+		fastqc ${reads[0]} ${reads[1]} --outdir ${sampleID}
+		cd ${sampleID}
+		unzip '*.zip'
+		cd ${sampleID}_R1_fastqc
+		csplit fastqc_data.txt '/>>/' '{*}'
+		awk '{ print \$1,\$2 }' xx03 > xx03_relevant
+		tail -n +2 xx03_relevant > xx03.csv
+		
+		echo "\$(python3.6 $script_folder/fastqc_trim_beginning.py)" > lead_R1.txt
+		echo "\$(python3.6 $script_folder/fastqc_trim.py)" > trail_R1.txt
+		
+		mv lead_R1.txt ..
+		mv trail_R1.txt ..
+		
+		cd ../${sampleID}_R2_fastqc
+		csplit fastqc_data.txt '/>>/' '{*}'
+		awk '{ print \$1,\$2 }' xx03 > xx03_relevant
+		tail -n +2 xx03_relevant > xx03.csv
+		
+		echo "\$(python3.6 $script_folder/fastqc_trim_beginning.py)" > lead_R2.txt
+		echo "\$(python3.6 $script_folder/fastqc_trim.py)" > trail_R2.txt
+		
+		mv lead_R2.txt ..
+		mv trail_R2.txt ..
+		
+		cd ../
+		
+		l_R1="\$(cat lead_R1.txt)"
+		l_R2="\$(cat lead_R2.txt)"
+		t_R1="\$(cat trail_R1.txt)"
+		t_R2="\$(cat trail_R2.txt)"
+		
+		echo "\$(python3.6 $script_folder/check_trim.py \$l_R1 \$l_R2)" > result.txt
+		echo "\$(python3.6 $script_folder/check_trim_trail.py \$t_R1 \$t_R2)" >> result.txt
+		
+		"""
+	else
+		"""
+		mkdir ${sampleID}
+		fastqc ${reads[0]} ${reads[1]} --outdir ${sampleID}
+		echo "no trimming" > ${sampleID}/result.txt
+		"""
 }
 	
 process fastp{
@@ -107,6 +151,7 @@ process trimmomatic{
 	
 	input:
 	tuple sampleID, file(reads) from raw_data_for_trimmomatic 
+	file f_r from trimmomatic_input
 	
 	output:
 	file "${sampleID}/*_paired.fq.gz" into trimmomatic_output 
@@ -118,7 +163,10 @@ process trimmomatic{
 	"""
 	mkdir ${sampleID}
 	cd ${sampleID}
-	trimmomatic PE ../${reads[0]} ../${reads[1]} ${sampleID}_R1_paired.fq.gz ${sampleID}_R1_unpaired.fq.gz ${sampleID}_R2_paired.fq.gz ${sampleID}_R2_unpaired.fq.gz LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36
+	lead="\$(head -n 1 ../${f_r})"
+	trail="\$(tail -n 1 ../${f_r})"
+	
+	trimmomatic PE ../${reads[0]} ../${reads[1]} ${sampleID}_R1_paired.fq.gz ${sampleID}_R1_unpaired.fq.gz ${sampleID}_R2_paired.fq.gz ${sampleID}_R2_unpaired.fq.gz LEADING:\$lead TRAILING:\$trail SLIDINGWINDOW:4:15 MINLEN:36
 	"""
 
 }
@@ -260,7 +308,6 @@ process pilon_no_trimming {
 	
 	output:
 	file "${sampleID}/*" into pilon_output
-	stdout result
 	
 	when:
 	params.assembly_improvement == true
@@ -333,4 +380,4 @@ process quast_after_trimmomatic{
 }
 
 
-result.view { it }
+//result.view { it }
