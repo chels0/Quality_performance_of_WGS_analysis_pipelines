@@ -406,17 +406,18 @@ process quast_no_trimming{
 	file scaffold_skesa from skesa_output_no_trim
 	val reference from ref_for_quast_no_trim
 	val sampleID from spades_id_name
+	val sampleID_skesa from skesa_id_name_no_trim 
 	
 	output:
 	file "SPAdes/$sampleID" into quast_output
-	file "SKESA/$sampleID" into quast_output_skesa
+	file "SKESA/$sampleID_skesa" into quast_output_skesa
 	val "$sampleID" into quast_id_name
 	
 	"""
 	mkdir SPAdes
 	mkdir SKESA
 	quast.py $scaffold -o SPAdes/$sampleID -r $reference
-	quast.py $scaffold_skesa -o SKESA/$sampleID -r $reference
+	quast.py $scaffold_skesa -o SKESA/$sampleID_skesa -r $reference
 	"""
 }
 
@@ -429,6 +430,7 @@ process quast_after_fastp{
 	file scaffold_skesa from skesa_output_fastp
 	val reference from ref_for_quast_fastp_trim
 	val sampleID from spades_id_name_fastp 
+	val sampleID_skesa from skesa_id_name_fastp 
 	
 	output:
 	file "SPAdes/$sampleID" into quast_output_fastp
@@ -439,7 +441,7 @@ process quast_after_fastp{
 	mkdir SPAdes
 	mkdir SKESA
 	quast.py $scaffold -o SPAdes/$sampleID -r $reference
-	quast.py $scaffold_skesa -o SKESA/$sampleID -r $reference
+	quast.py $scaffold_skesa -o SKESA/$sampleID_skesa -r $reference
 	"""
 }
 
@@ -452,17 +454,18 @@ process quast_after_trimmomatic{
 	file scaffold_skesa from skesa_output_trimmomatic
 	val reference from ref_for_quast_trimmomatic_trim
 	val sampleID from spades_id_name_trimmomatic
+	val sampleID_skesa from skesa_id_name_trimmomatic
 	
 	output:
 	file "SPAdes/$sampleID" into quast_output_trimmomatic
-	file "SKESA/$sampleID" into quast_output_trimmomatic_skesa
+	file "SKESA/$sampleID_skesa" into quast_output_trimmomatic_skesa
 	val "$sampleID" into quast_id_name_trimmomatic
 	
 	"""
 	mkdir SPAdes
 	mkdir SKESA
 	quast.py $scaffold -o SPAdes/$sampleID -r $reference
-	quast.py $scaffold_skesa -o SKESA/$sampleID -r $reference
+	quast.py $scaffold_skesa -o SKESA/$sampleID_skesa -r $reference
 	"""
 }
 
