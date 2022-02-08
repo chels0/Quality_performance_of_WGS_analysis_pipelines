@@ -40,16 +40,16 @@ process fastqc_raw {
 	
 		"""
 		mkdir ${sampleID}
-		fastqc ${reads[0]} ${reads[1]} --outdir ${sampleID}
+		fastqc ${reads[0]} ${reads[1]} --outdir ${sampleID} //run fastqc
 		cd ${sampleID}
-		unzip '*.zip'
+		unzip '*.zip' //unzip fastqc results
 		cd ${sampleID}_R1_fastqc
-		csplit fastqc_data.txt '/>>/' '{*}'
-		awk '{ print \$1,\$2 }' xx03 > xx03_relevant
-		tail -n +2 xx03_relevant > xx03.csv
+		csplit fastqc_data.txt '/>>/' '{*}' //split the data file after each >>
+		awk '{ print \$1,\$2 }' xx03 > xx03_relevant //save first and second column to csv file
+		tail -n +2 xx03_relevant > xx03.csv //remove first row
 		
-		echo "\$(python3.6 $script_folder/fastqc_trim_beginning.py)" > lead_R1.txt
-		echo "\$(python3.6 $script_folder/fastqc_trim.py)" > trail_R1.txt
+		echo "\$(python3.6 $script_folder/fastqc_trim_beginning.py)" > lead_R1.txt //determine leading for trimmomatic
+		echo "\$(python3.6 $script_folder/fastqc_trim.py)" > trail_R1.txt //determine trailing for trimmomatic
 		
 		mv lead_R1.txt ..
 		mv trail_R1.txt ..
@@ -67,13 +67,14 @@ process fastqc_raw {
 		
 		cd ../
 		
-		l_R1="\$(cat lead_R1.txt)"
+		//define parameters for python
+		l_R1="\$(cat lead_R1.txt)" 
 		l_R2="\$(cat lead_R2.txt)"
 		t_R1="\$(cat trail_R1.txt)"
 		t_R2="\$(cat trail_R2.txt)"
 		
-		echo "\$(python3.6 $script_folder/check_trim.py \$l_R1 \$l_R2)" > result.txt
-		echo "\$(python3.6 $script_folder/check_trim_trail.py \$t_R1 \$t_R2)" >> result.txt
+		echo "\$(python3.6 $script_folder/check_trim.py \$l_R1 \$l_R2)" > result.txt //save highest leading value in txt file
+		echo "\$(python3.6 $script_folder/check_trim_trail.py \$t_R1 \$t_R2)" >> result.txt //save highest trailing value in txt file
 		
 		"""
 	else
@@ -217,7 +218,7 @@ process spades_no_trim{
 
 	"""
 	spades.py -1 ${reads[0]} -2 ${reads[1]} -o $sampleID ${settings}
-	mv ${sampleID}/scaffolds.fasta ${sampleID}/${sampleID}_scaffolds.fasta
+	mv ${sampleID}/scaffolds.fasta ${sampleID}/${sampleID}_spades_scaffolds.fasta
 	"""
 
 }
@@ -241,7 +242,7 @@ process spades_after_fastp{
  	
  	"""
 	spades.py -1 ${sampleID[0]} -2 ${sampleID[1]} --only-assembler -o $sample
-	mv ${sample}/scaffolds.fasta ${sample}/${sample}_trimmed_fastp_scaffolds.fasta
+	mv ${sample}/scaffolds.fasta ${sample}/${sample}_trimmed_fastp_spades_scaffolds.fasta
 	"""
 
 }
@@ -267,7 +268,7 @@ process spades_after_trimmomatic{
 
 	"""
 	spades.py -1 ${sampleID[0]} -2 ${sampleID[1]} --only-assembler -o $sample 
-	mv ${sample}/scaffolds.fasta ${sample}/${sample}_trimmed_trimmomatic_scaffolds.fasta
+	mv ${sample}/scaffolds.fasta ${sample}/${sample}_trimmed_trimmomatic_spades_scaffolds.fasta
 	"""
 
 
@@ -290,7 +291,7 @@ process skesa_no_trim{
 
 	"""
 	mkdir ${sampleID}
-	skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}/${sampleID}_contigs.fasta
+	skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}/${sampleID}_skesa_contigs.fasta
 	"""
 
 }
@@ -311,9 +312,8 @@ process skesa_after_fastp{
 	params.fastp_trim_qc == true
 
 	"""
-	dir=\$(echo ${sampleID} | sed 's/_.*//g')
-	mkdir \$dir
-	skesa --reads ${sampleID[0]},${sampleID[1]} --use_paired_ends > \${dir}/\${dir}_contigs.fasta
+	mkdir ${sampleID}
+	skesa --reads ${sampleID[0]},${sampleID[1]} --use_paired_ends > ${sampleID}/${sampleID}_trimmed_fastp_skesa_contigs.fasta
 	"""
 }
 
@@ -334,7 +334,7 @@ process skesa_after_trimmomatic{
 
 	"""
 	mkdir ${sample}
-	skesa --reads ${sampleID[0]},${sampleID[1]} --use_paired_ends > ${sample}/${sample}_contigs.fasta
+	skesa --reads ${sampleID[0]},${sampleID[1]} --use_paired_ends > ${sample}/${sample}_trimmed_trimmomatic_skesa_contigs.fasta
 	"""
 }
 
