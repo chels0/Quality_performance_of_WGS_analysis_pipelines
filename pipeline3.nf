@@ -18,6 +18,7 @@ else if ( params.fastp_trim_qc  == true )
 folder = Channel.value(folder_name)
 
 scripts_folder = Channel.value(params.path_to_scripts)
+scripts_folder.into { script_fastqc ; script_spades_no_trim ; script_skesa_no_trim }
 
 trimmomatic_setting = Channel.value(params.trimmomatic_set)
 spades_setting = Channel.value(params.spades_set)
@@ -29,7 +30,7 @@ process fastqc_raw {
 	
 	input:
 	tuple sampleID, file(reads) from raw_data_for_fastqc
-	val script_folder from scripts_folder
+	val script_folder from script_fastqc
 
 	output:
 	file "${sampleID}/*" into fastqc_raw_output
@@ -207,6 +208,7 @@ process spades_no_trim{
 	input:
 	tuple sampleID, file(reads) from raw_data_for_spades
 	val settings from no_trim_settings
+	val script_folder from script_spades_no_trim
 	
 	output:
 	file "${sampleID}/*_scaffolds.fasta" into spades_output
@@ -219,6 +221,9 @@ process spades_no_trim{
 	"""
 	spades.py -1 ${reads[0]} -2 ${reads[1]} -o $sampleID ${settings}
 	mv ${sampleID}/scaffolds.fasta ${sampleID}/${sampleID}_spades_scaffolds.fasta
+	cd ${sampleID}
+	python3 ${script_folder}/remove_contaminants.py ${sampleID}_spades_scaffolds.fasta 1000
+	
 	"""
 
 }
@@ -243,6 +248,7 @@ process spades_after_fastp{
  	"""
 	spades.py -1 ${sampleID[0]} -2 ${sampleID[1]} --only-assembler -o $sample
 	mv ${sample}/scaffolds.fasta ${sample}/${sample}_trimmed_fastp_spades_scaffolds.fasta
+
 	"""
 
 }
