@@ -8,7 +8,7 @@ Created on Fri Jan 28 11:05:08 2022
 
 import pandas as pd
 import numpy as np
-df_files= pd.read_csv('xx03.csv', sep=' ')
+df_files= pd.read_csv('xx03_relevant', sep=' ')
 
 splt = np.array_split(df_files, 2)
 
