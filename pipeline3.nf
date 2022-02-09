@@ -28,6 +28,8 @@ process fastqc_raw {
 	
 	publishDir './Results/FastQC_Raw_reads', mode: 'copy'
 	
+	tag "${sampleID}"
+	
 	input:
 	tuple sampleID, file(reads) from raw_data_for_fastqc
 	val script_folder from script_fastqc
@@ -41,16 +43,23 @@ process fastqc_raw {
 	
 		"""
 		mkdir ${sampleID}
-		fastqc ${reads[0]} ${reads[1]} --outdir ${sampleID} //run fastqc
+		# fastqc
+		fastqc ${reads[0]} ${reads[1]} --outdir ${sampleID} 
 		cd ${sampleID}
-		unzip '*.zip' //unzip fastqc results
+		# unzip fastqc results
+		unzip '*.zip' 
 		cd ${sampleID}_R1_fastqc
-		csplit fastqc_data.txt '/>>/' '{*}' //split the data file after each >>
-		awk '{ print \$1,\$2 }' xx03 > xx03_relevant //save first and second column to csv file
-		tail -n +2 xx03_relevant > xx03.csv //remove first row
+		# split the data file after each >>
+		csplit fastqc_data.txt '/>>/' '{*}' 
+		# save first and second column to csv file
+		awk '{ print \$1,\$2 }' xx03 > xx03_relevant
+		# remove first row
+		tail -n +2 xx03_relevant > xx03.csv 
 		
-		echo "\$(python3.6 $script_folder/fastqc_trim_beginning.py)" > lead_R1.txt //determine leading for trimmomatic
-		echo "\$(python3.6 $script_folder/fastqc_trim.py)" > trail_R1.txt //determine trailing for trimmomatic
+		# determine leading for trimmomatic
+		echo "\$(python3.6 $script_folder/fastqc_trim_beginning.py)" > lead_R1.txt
+		# determine trailing for trimmomatic
+		echo "\$(python3.6 $script_folder/fastqc_trim.py)" > trail_R1.txt 
 		
 		mv lead_R1.txt ..
 		mv trail_R1.txt ..
@@ -68,14 +77,15 @@ process fastqc_raw {
 		
 		cd ../
 		
-		//define parameters for python
+		# define parameters for python
 		l_R1="\$(cat lead_R1.txt)" 
 		l_R2="\$(cat lead_R2.txt)"
 		t_R1="\$(cat trail_R1.txt)"
 		t_R2="\$(cat trail_R2.txt)"
-		
-		echo "\$(python3.6 $script_folder/check_trim.py \$l_R1 \$l_R2)" > result.txt //save highest leading value in txt file
-		echo "\$(python3.6 $script_folder/check_trim_trail.py \$t_R1 \$t_R2)" >> result.txt //save highest trailing value in txt file
+		# save highest leading value in txt file
+		echo "\$(python3.6 $script_folder/check_trim.py \$l_R1 \$l_R2)" > result.txt 
+		# save highest trailing value in txt file
+		echo "\$(python3.6 $script_folder/check_trim_trail.py \$t_R1 \$t_R2)" >> result.txt 
 		
 		"""
 	else
@@ -89,6 +99,7 @@ process fastqc_raw {
 process fastp{
 	
 	publishDir './Results/'+folder_name+'/Fastp/', mode: 'copy'
+	tag "${sampleID}"
 	
 	input:
 	tuple sampleID, file(reads) from raw_data_for_Fastp
@@ -128,6 +139,7 @@ fastp_id_name.into { fastp_id_name_fastqc ; fastp_id_name_SPAdes ; fastp_id_name
 process fastqc_post_fastp_trim {
 	
 	publishDir './Results/'+folder_name+'/FastQC_post_trim', mode: 'copy'
+	tag "${sampleID}"
 	
 	input:
 	file sample from fastp_output_fastqc
@@ -154,6 +166,7 @@ process fastqc_post_fastp_trim {
 process trimmomatic{
 
 	publishDir './Results/Trimmed_w_Trimmomatic/Trimmomatic/', mode: 'copy'
+	tag "${sampleID}"
 	
 	input:
 	tuple sampleID, file(reads) from raw_data_for_trimmomatic 
@@ -185,6 +198,7 @@ id_name_trimmomatic.into { id_name_for_SPAdes ; id_name_for_FastQC ; id_name_for
 process fastqc_post_trimmomatic {
 	
 	publishDir './Results/Trimmed_w_Trimmomatic/FastQC_post_trim', mode: 'copy'
+	tag "${sampleID}"
 	
 	input:
 	file sample from trimmomatic_output_for_FastQC
@@ -204,7 +218,8 @@ process fastqc_post_trimmomatic {
 process spades_no_trim{
 	
 	publishDir './Results/No_trimming/SPAdes', mode: 'copy'
-
+	tag "${sampleID}"
+	
 	input:
 	tuple sampleID, file(reads) from raw_data_for_spades
 	val settings from no_trim_settings
@@ -212,6 +227,7 @@ process spades_no_trim{
 	
 	output:
 	file "${sampleID}/*_scaffolds.fasta" into spades_output
+	file "${sampleID}/*_polished.fasta" into spades_polished_output
 	file "${sampleID}/*" into spades_all
 	val "$sampleID" into spades_id_name 
 	
@@ -222,7 +238,7 @@ process spades_no_trim{
 	spades.py -1 ${reads[0]} -2 ${reads[1]} -o $sampleID ${settings}
 	mv ${sampleID}/scaffolds.fasta ${sampleID}/${sampleID}_spades_scaffolds.fasta
 	cd ${sampleID}
-	python3 ${script_folder}/remove_contaminants.py ${sampleID}_spades_scaffolds.fasta 1000
+	python3 ${script_folder}/remove_contaminants.py ${sampleID}_spades_scaffolds 300
 	
 	"""
 
@@ -232,13 +248,14 @@ process spades_no_trim{
 process spades_after_fastp{
 	
 	publishDir './Results/'+folder_name+'/SPAdes', mode: 'copy'
-
+	tag "${sample}"
+	
 	input:
 	file sampleID from fastp_output_SPAdes
 	val sample from fastp_id_name_SPAdes
 
 	output:
-	file "${sample}/*_scaffolds.fasta" into spades_output_fastp
+	file "${sample}/*{_scaffolds.fasta , {_polished.fasta}" into spades_output_fastp
 	file "${sample}/*" into spades_all_fastp
 	val "$sample" into spades_id_name_fastp 
  	
@@ -254,12 +271,14 @@ process spades_after_fastp{
 }
 
 spades_output.into { spades_output_for_quast_no_trim ; spades_output_for_pilon_no_trim }
+spades_polished_output.into { spades_polished_quast_no_trim ; spades_polished_pilon_no_trim }
 spades_output_fastp.into {spades_output_for_quast_trim ; spades_output_fastp_for_pilon_trim }
 
 process spades_after_trimmomatic{
 	
 	publishDir './Results/Trimmed_w_Trimmomatic/SPAdes', mode: 'copy'
-
+	tag "${sample}"
+	
 	input:
 	file sampleID from trimmomatic_output_for_SPAdes
 	val sample from id_name_for_SPAdes
@@ -283,7 +302,7 @@ process spades_after_trimmomatic{
 process skesa_no_trim{
 	
 	publishDir './Results/No_trimming/SKESA', mode: 'copy'
-
+	tag "${sampleID}"
 	input:
 	tuple sampleID, file(reads) from raw_data_for_skesa
 	val settings from no_trim_settings
@@ -305,7 +324,8 @@ process skesa_no_trim{
 process skesa_after_fastp{
 	
 	publishDir './Results/'+folder_name+'/SKESA', mode: 'copy'
-
+	tag "${sample}"
+	
 	input:
 	file sampleID from fastp_output_skesa
 	val sample from fastp_id_name_skesa
@@ -318,15 +338,18 @@ process skesa_after_fastp{
 	params.fastp_trim_qc == true
 
 	"""
-	mkdir ${sampleID}
-	skesa --reads ${sampleID[0]},${sampleID[1]} --use_paired_ends > ${sampleID}/${sampleID}_trimmed_fastp_skesa_contigs.fasta
+	echo $sample
+	mkdir ${sample}
+	skesa --reads ${sampleID[0]},${sampleID[1]} --use_paired_ends > ${sample}/${sample}_trimmed_fastp_skesa_contigs.fasta
 	"""
 }
 
 process skesa_after_trimmomatic{
 	
 	publishDir './Results/Trimmed_w_Trimmomatic/SKESA', mode: 'copy'
-
+	
+	tag "${sample}"
+	
 	input:
 	file sampleID from trimmomatic_output_for_skesa
 	val sample from id_name_for_skesa
@@ -406,23 +429,27 @@ process pilon_no_trimming {
 process quast_no_trimming{
 	
 	publishDir './Results/No_trimming/Quast', mode: 'copy'
-
+	
+	tag "${sampleID}"
+	
 	input:
 	file scaffold from spades_output_for_quast_no_trim
+	file scaffold_polished from spades_polished_quast_no_trim
 	file scaffold_skesa from skesa_output_no_trim
 	val reference from ref_for_quast_no_trim
 	val sampleID from spades_id_name
 	val sampleID_skesa from skesa_id_name_no_trim 
 	
 	output:
-	file "SPAdes/$sampleID" into quast_output
+	file "SPAdes/*" into quast_output
 	file "SKESA/$sampleID_skesa" into quast_output_skesa
 	val "$sampleID" into quast_id_name
 	
 	"""
 	mkdir SPAdes
 	mkdir SKESA
-	quast.py $scaffold -o SPAdes/$sampleID -r $reference
+	quast.py $scaffold -o SPAdes/Not_polished/$sampleID -r $reference
+	quast.py $scaffold_polished -o SPAdes/Polished/$sampleID -r $reference
 	quast.py $scaffold_skesa -o SKESA/$sampleID_skesa -r $reference
 	"""
 }
@@ -430,7 +457,8 @@ process quast_no_trimming{
 process quast_after_fastp{
 	
 	publishDir './Results/'+folder_name+'/Quast', mode: 'copy'
-
+	tag "${sampleID}"
+	
 	input:
 	file scaffold from spades_output_for_quast_trim
 	file scaffold_skesa from skesa_output_fastp
@@ -440,7 +468,7 @@ process quast_after_fastp{
 	
 	output:
 	file "SPAdes/$sampleID" into quast_output_fastp
-	file "SKESA/$sampleID" into quast_output_fastp_skesa
+	file "SKESA/$sampleID_skesa" into quast_output_fastp_skesa
 	val "$sampleID" into quast_id_name_fastp
 	
 	"""
@@ -454,7 +482,8 @@ process quast_after_fastp{
 process quast_after_trimmomatic{
 	
 	publishDir './Results/Trimmed_w_Trimmomatic/Quast', mode: 'copy'
-
+	tag "${sampleID}"
+	
 	input:
 	file scaffold from spades_output_trimmomatic
 	file scaffold_skesa from skesa_output_trimmomatic

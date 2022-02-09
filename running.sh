@@ -11,7 +11,7 @@ path= "$(cat path.txt)"
 sed "s/PATHS/$path/g" nextflow_change.config > nextflow_config
 
 
-nextflow pipeline2.nf -profile conda -resume
+nextflow pipeline3.nf -profile conda -resume
 
 multiqc Results/. -o Results/MultiQC
 
