@@ -10,7 +10,7 @@ import re
 import sys
 
 fasta_name = sys.argv[1]
-contig_size_to_remove = sys.arv[2]
+contig_size_to_remove = int(sys.argv[2])
 
 with open(fasta_name+'.fasta', "r") as f:
     seq = f.readlines()
