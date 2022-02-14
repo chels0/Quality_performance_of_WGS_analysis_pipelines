@@ -18,3 +18,4 @@ dependencies:
   - samtools=1.14
   - pandas=0.25.3
   - rasusa=0.6.1
+  - chewbbaca=2.0.16

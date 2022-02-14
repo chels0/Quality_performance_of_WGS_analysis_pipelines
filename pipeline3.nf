@@ -15,10 +15,11 @@ if ( params.fastp_trim_qc == false )
 else if ( params.fastp_trim_qc  == true )
 	folder_name = 'Trimmed_w_fastp'
 
+
 folder = Channel.value(folder_name)
 
 scripts_folder = Channel.value(params.path_to_scripts)
-scripts_folder.into { script_fastqc ; script_spades_no_trim ; script_skesa_no_trim }
+scripts_folder.into { script_fastqc ; script_spades_no_trim ; script_skesa_no_trim ; script_spades_fastp ; script_skesa_fastp ; script_spades_trimmomatic ; script_skesa_trimmomatic}
 
 trimmomatic_setting = Channel.value(params.trimmomatic_set)
 spades_setting = Channel.value(params.spades_set)
@@ -227,7 +228,6 @@ process spades_no_trim{
 	
 	output:
 	file "${sampleID}/${sampleID}*" into spades_output
-	//file "${sampleID}/*_polished.fasta" into spades_polished_output
 	file "${sampleID}/*" into spades_all
 	val "$sampleID" into spades_id_name 
 	
@@ -238,7 +238,7 @@ process spades_no_trim{
 	spades.py -1 ${reads[0]} -2 ${reads[1]} -o $sampleID ${settings}
 	mv ${sampleID}/scaffolds.fasta ${sampleID}/${sampleID}_spades_scaffolds.fasta
 	cd ${sampleID}
-	python3 ${script_folder}/remove_contaminants.py ${sampleID}_spades_scaffolds 300
+	python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_spades_scaffolds 300
 	"""
 
 }
@@ -252,9 +252,10 @@ process spades_after_fastp{
 	input:
 	file sampleID from fastp_output_SPAdes
 	val sample from fastp_id_name_SPAdes
+	val script_folder from script_spades_fastp
 
 	output:
-	file "${sample}/*{_scaffolds.fasta , {_polished.fasta}" into spades_output_fastp
+	file "${sample}/${sample}*" into spades_output_fastp
 	file "${sample}/*" into spades_all_fastp
 	val "$sample" into spades_id_name_fastp 
  	
@@ -264,7 +265,8 @@ process spades_after_fastp{
  	"""
 	spades.py -1 ${sampleID[0]} -2 ${sampleID[1]} --only-assembler -o $sample
 	mv ${sample}/scaffolds.fasta ${sample}/${sample}_trimmed_fastp_spades_scaffolds.fasta
-
+	cd ${sample}
+	python3 ${script_folder}/remove_contaminants_spades.py ${sample}_trimmed_fastp_spades_scaffolds 300
 	"""
 
 }
@@ -281,9 +283,10 @@ process spades_after_trimmomatic{
 	input:
 	file sampleID from trimmomatic_output_for_SPAdes
 	val sample from id_name_for_SPAdes
+	val script_folder from script_spades_trimmomatic
 
 	output:
-	file "${sample}/*_scaffolds.fasta" into spades_output_trimmomatic
+	file "${sample}/${sample}*" into spades_output_trimmomatic
 	file "${sample}/*" into spades_all_trimmomatic
 	val "$sample" into spades_id_name_trimmomatic
  	
@@ -293,6 +296,8 @@ process spades_after_trimmomatic{
 	"""
 	spades.py -1 ${sampleID[0]} -2 ${sampleID[1]} --only-assembler -o $sample 
 	mv ${sample}/scaffolds.fasta ${sample}/${sample}_trimmed_trimmomatic_spades_scaffolds.fasta
+	cd ${sample}
+	python3 ${script_folder}/remove_contaminants_spades.py ${sample}_trimmed_trimmomatic_spades_scaffolds 300
 	"""
 
 
@@ -302,12 +307,14 @@ process skesa_no_trim{
 	
 	publishDir './Results/No_trimming/SKESA', mode: 'copy'
 	tag "${sampleID}"
+	
 	input:
 	tuple sampleID, file(reads) from raw_data_for_skesa
 	val settings from no_trim_settings
+	val script_folder from script_skesa_no_trim
 	
 	output:
-	file "${sampleID}/*_contigs.fasta" into skesa_output_no_trim
+	file "${sampleID}/${sampleID}*" into skesa_output_no_trim
 	val "$sampleID" into skesa_id_name_no_trim 
 	
 	when:
@@ -316,6 +323,8 @@ process skesa_no_trim{
 	"""
 	mkdir ${sampleID}
 	skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}/${sampleID}_skesa_contigs.fasta
+	cd ${sampleID}
+	python3 ${script_folder}/remove_contaminants.py ${sampleID}_skesa_contigs 300
 	"""
 
 }
@@ -328,9 +337,10 @@ process skesa_after_fastp{
 	input:
 	file sampleID from fastp_output_skesa
 	val sample from fastp_id_name_skesa
+	val script_folder from script_skesa_fastp
 	
 	output:
-	file "${sample}/*_contigs.fasta" into skesa_output_fastp
+	file "${sample}/${sample}*" into skesa_output_fastp
 	val "$sample" into skesa_id_name_fastp 
 	
 	when:
@@ -340,6 +350,8 @@ process skesa_after_fastp{
 	echo $sample
 	mkdir ${sample}
 	skesa --reads ${sampleID[0]},${sampleID[1]} --use_paired_ends > ${sample}/${sample}_trimmed_fastp_skesa_contigs.fasta
+	cd ${sample}
+	python3 ${script_folder}/remove_contaminants.py ${sample}_trimmed_fastp_skesa_contigs 300
 	"""
 }
 
@@ -352,9 +364,10 @@ process skesa_after_trimmomatic{
 	input:
 	file sampleID from trimmomatic_output_for_skesa
 	val sample from id_name_for_skesa
+	val script_folder from script_skesa_trimmomatic
 	
 	output:
-	file "${sample}/*_contigs.fasta" into skesa_output_trimmomatic
+	file "${sample}/${sample}*" into skesa_output_trimmomatic
 	val "${sample}" into skesa_id_name_trimmomatic
 	
 	when:
@@ -363,6 +376,8 @@ process skesa_after_trimmomatic{
 	"""
 	mkdir ${sample}
 	skesa --reads ${sampleID[0]},${sampleID[1]} --use_paired_ends > ${sample}/${sample}_trimmed_trimmomatic_skesa_contigs.fasta
+	cd ${sample}
+	python3 ${script_folder}/remove_contaminants.py ${sample}_trimmed_trimmomatic_skesa_contigs 300
 	"""
 }
 
@@ -439,17 +454,15 @@ process quast_no_trimming{
 	val sampleID_skesa from skesa_id_name_no_trim 
 	
 	output:
-	file "SPAdes/Not_polished/${sampleID}" into quast_output_not_polished
-	file "SPAdes/Polished/${sampleID}" into quast_output_polished
-	file "SKESA/$sampleID_skesa" into quast_output_skesa
+	file "SPAdes/${sampleID}/*" into quast_output_spades_no_trim
+	file "SKESA/${sampleID_skesa}/*" into quast_output_skesa_no_trim
 	val "$sampleID" into quast_id_name
 	
 	"""
-	mkdir SPAdes
-	mkdir SKESA
-	quast.py ${scaffold[0]} -o SPAdes/Not_polished/$sampleID -r $reference
-	quast.py ${scaffold[1]} -o SPAdes/Polished/$sampleID -r $reference
-	quast.py $scaffold_skesa -o SKESA/$sampleID_skesa -r $reference
+	quast.py ${scaffold[0]} -o SPAdes/$sampleID/Not_polished -r $reference
+	quast.py ${scaffold[1]} -o SPAdes/$sampleID/Polished -r $reference
+	quast.py ${scaffold_skesa[0]} -o SKESA/$sampleID_skesa/Not_polished -r $reference
+	quast.py ${scaffold_skesa[1]} -o SKESA/$sampleID_skesa/Polished -r $reference
 	"""
 }
 
@@ -466,15 +479,15 @@ process quast_after_fastp{
 	val sampleID_skesa from skesa_id_name_fastp 
 	
 	output:
-	file "SPAdes/$sampleID" into quast_output_fastp
-	file "SKESA/$sampleID_skesa" into quast_output_fastp_skesa
+	file "SPAdes/${sampleID}/*" into quast_output_spades_fastp
+	file "SKESA/${sampleID_skesa}/*" into quast_output_skesa_fastp
 	val "$sampleID" into quast_id_name_fastp
 	
 	"""
-	mkdir SPAdes
-	mkdir SKESA
-	quast.py $scaffold -o SPAdes/$sampleID -r $reference
-	quast.py $scaffold_skesa -o SKESA/$sampleID_skesa -r $reference
+	quast.py ${scaffold[0]} -o SPAdes/$sampleID/Not_polished -r $reference
+	quast.py ${scaffold[1]} -o SPAdes/$sampleID/Polished -r $reference
+	quast.py ${scaffold_skesa[0]} -o SKESA/$sampleID_skesa/Not_polished -r $reference
+	quast.py ${scaffold_skesa[1]} -o SKESA/$sampleID_skesa/Polished -r $reference
 	"""
 }
 
@@ -491,15 +504,15 @@ process quast_after_trimmomatic{
 	val sampleID_skesa from skesa_id_name_trimmomatic
 	
 	output:
-	file "SPAdes/$sampleID" into quast_output_trimmomatic
-	file "SKESA/$sampleID_skesa" into quast_output_trimmomatic_skesa
+	file "SPAdes/${sampleID}/*" into quast_output_trimmomatic
+	file "SKESA/${sampleID_skesa}/*" into quast_output_trimmomatic_skesa
 	val "$sampleID" into quast_id_name_trimmomatic
 	
 	"""
-	mkdir SPAdes
-	mkdir SKESA
-	quast.py $scaffold -o SPAdes/$sampleID -r $reference
-	quast.py $scaffold_skesa -o SKESA/$sampleID_skesa -r $reference
+	quast.py ${scaffold[0]} -o SPAdes/$sampleID/Not_polished -r $reference
+	quast.py ${scaffold[1]} -o SPAdes/$sampleID/Polished -r $reference
+	quast.py ${scaffold_skesa[0]} -o SKESA/$sampleID_skesa/Not_polished -r $reference
+	quast.py ${scaffold_skesa[1]} -o SKESA/$sampleID_skesa/Polished -r $reference
 	"""
 }
 
