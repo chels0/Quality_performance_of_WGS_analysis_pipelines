@@ -19,3 +19,6 @@ dependencies:
   - pandas=0.25.3
   - rasusa=0.6.1
   - chewbbaca=2.0.16
+  - biopython=1.72
+  - blast=2.9.0
+  - prodigal=2.6.3
