@@ -2,11 +2,11 @@
 
 #Create schema
 
-chewBBACA.py CreateSchema -i /home/chelsea/Documents/Quality_performance_of_WGS_analysis_pipelines/Raw_data/cgMLST/jejuni_genomes/ -o jejuni_schema --ptf /home/chelsea/Documents/Quality_performance_of_WGS_analysis_pipelines/Raw_data/Campylobacter_jejuni.trn --cpu 6
+#chewBBACA.py CreateSchema -i /home/chelsea/Documents/Quality_performance_of_WGS_analysis_pipelines/Raw_data/cgMLST/jejuni_genomes/ -o jejuni_schema --ptf /home/chelsea/Documents/Quality_performance_of_WGS_analysis_pipelines/Raw_data/Campylobacter_jejuni.trn --cpu 6
 
 #Allele calling for wgMLST
 
-chewBBACA.py AlleleCall -i /home/chelsea/Documents/Quality_performance_of_WGS_analysis_pipelines/Raw_data/cgMLST/jejuni_genomes/ -g jejuni_schema/ -o jejuni_wgMLST --cpu 6
+chewBBACA.py AlleleCall -i /home/chelsea/Documents/Quality_performance_of_WGS_analysis_pipelines/Raw_data/cgMLST/Genomes -g jejuni_schema/ -o jejuni_wgMLST --cpu 6
 
 mv jejuni_wgMLST/result*/* jejuni_wgMLST/.
 
@@ -28,4 +28,4 @@ cat jejuni_cgMLST/cgMLSTschema.txt |sed -e "s|^|/home/chelsea/Documents/Quality_
 
 #Allele call cgMLST
 
-chewBBACA.py AlleleCall -i /home/chelsea/Documents/Quality_performance_of_WGS_analysis_pipelines/Results/No_trimming/assemblies/ -g jejuni_cgMLST/fullpath_cgMLSTschema.txt -o results_cgMLST_jejuni --cpu 6
+chewBBACA.py AlleleCall -i /home/chelsea/Documents/Quality_performance_of_WGS_analysis_pipelines/Results/all_assemblies/ -g Cjejuni_cgMLST_678_listGenes.txt -o results_cgMLST_jejuni --cpu 6

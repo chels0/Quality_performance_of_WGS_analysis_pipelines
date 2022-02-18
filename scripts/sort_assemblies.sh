@@ -10,23 +10,23 @@ ls Results/No_trimming/SPAdes/ > directory_list.txt
 
 mkdir Results/all_assemblies
 
-path_no_trim= 'Results/No_trimming/'
-path_fastp= 'Results/Trimmed_w_fastp/'
-path_trimmomatic= 'Resulta/Trimmed_w_Trimmomatic/'
+path_no_trim='Results/No_trimming'
+path_fastp='Results/Trimmed_w_fastp'
+path_trimmomatic='Results/Trimmed_w_Trimmomatic'
 
 for dir in $(cat directory_list.txt)
 do
-	ln -s $path_no_trim/SPAdes/$dir/*_polished.fasta Results/all_assemblies/.
-	ln -s $path_no_trim/SPAdes/$dir/*_scaffolds.fasta Results/all_assemblies/.
-	ln -s $path_fastp/SPAdes/$dir/*_polished.fasta Results/all_assemblies/.
-        ln -s $path_fastp/SPAdes/$dir/*_scaffolds.fasta Results/all_assemblies/.
-	ln -s $path_trimmomatic/SPAdes/$dir/*_polished.fasta Results/all_assemblies/.
-        ln -s $path_trimmomatic/SPAdes/$dir/*_scaffolds.fasta Results/all_assemblies/.
+	cp ${path_no_trim}/SPAdes/${dir}/*_polished.fasta Results/all_assemblies/.
+	cp ${path_no_trim}/SPAdes/${dir}/*_scaffolds.fasta Results/all_assemblies/.
+	cp ${path_fastp}/SPAdes/${dir}/*_polished.fasta Results/all_assemblies/.
+	cp ${path_fastp}/SPAdes/${dir}/*_scaffolds.fasta Results/all_assemblies/.
+	cp -s ${path_trimmomatic}/SPAdes/${dir}/*_polished.fasta Results/all_assemblies/.
+	cp -s ${path_trimmomatic}/SPAdes/${dir}/*_scaffolds.fasta Results/all_assemblies/.
 	
-	ln -s $path_no_trim/SKESA/$dir/*.fasta Results/all_assemblies/.
-        ln -s $path_no_trim/SKESA/$dir/*.fasta Results/all_assemblies/.
-        ln -s $path_fastp/SKESA/$dir/*.fasta Results/all_assemblies/.
-
+	cp ${path_no_trim}/SKESA/${dir}/*.fasta Results/all_assemblies/.
+	cp ${path_no_trim}/SKESA/${dir}/*.fasta Results/all_assemblies/.
+	cp ${path_fastp}/SKESA/${dir}/*.fasta Results/all_assemblies/.
+done
 #for  i in $(seq1 $nr_of_files)
 #do
 #	ln -s $dir/*_scaffolds.fasta Results/all_assemblies/.
