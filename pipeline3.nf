@@ -253,6 +253,7 @@ process spades_after_fastp{
 	file sampleID from fastp_output_SPAdes
 	val sample from fastp_id_name_SPAdes
 	val script_folder from script_spades_fastp
+	val settings from trim_fastp_setting
 
 	output:
 	file "${sample}/${sample}*" into spades_output_fastp
@@ -263,17 +264,13 @@ process spades_after_fastp{
  	params.fastp_trim_qc == true
  	
  	"""
-	spades.py -1 ${sampleID[0]} -2 ${sampleID[1]} --only-assembler -o $sample
+	spades.py -1 ${sampleID[0]} -2 ${sampleID[1]} -o $sample ${settings}
 	mv ${sample}/scaffolds.fasta ${sample}/${sample}_trimmed_fastp_spades_scaffolds.fasta
 	cd ${sample}
 	python3 ${script_folder}/remove_contaminants_spades.py ${sample}_trimmed_fastp_spades_scaffolds 300
 	"""
 
 }
-
-spades_output.into { spades_output_for_quast_no_trim ; spades_output_for_pilon_no_trim }
-//spades_polished_output.into { spades_polished_quast_no_trim ; spades_polished_pilon_no_trim }
-spades_output_fastp.into {spades_output_for_quast_trim ; spades_output_fastp_for_pilon_trim }
 
 process spades_after_trimmomatic{
 	
@@ -284,6 +281,7 @@ process spades_after_trimmomatic{
 	file sampleID from trimmomatic_output_for_SPAdes
 	val sample from id_name_for_SPAdes
 	val script_folder from script_spades_trimmomatic
+	val settings from trim_trimmomatic_setting
 
 	output:
 	file "${sample}/${sample}*" into spades_output_trimmomatic
@@ -294,7 +292,7 @@ process spades_after_trimmomatic{
  	params.trimmomatic==true
 
 	"""
-	spades.py -1 ${sampleID[0]} -2 ${sampleID[1]} --only-assembler -o $sample 
+	spades.py -1 ${sampleID[0]} -2 ${sampleID[1]} -o $sample ${settings}
 	mv ${sample}/scaffolds.fasta ${sample}/${sample}_trimmed_trimmomatic_spades_scaffolds.fasta
 	cd ${sample}
 	python3 ${script_folder}/remove_contaminants_spades.py ${sample}_trimmed_trimmomatic_spades_scaffolds 300
@@ -302,6 +300,13 @@ process spades_after_trimmomatic{
 
 
 }
+
+spades_output.into { spades_output_for_quast_no_trim ; spades_output_for_pilon_no_trim ; spades_no_trim_sorting }
+//spades_polished_output.into { spades_polished_quast_no_trim ; spades_polished_pilon_no_trim }
+spades_output_fastp.into {spades_output_for_quast_trim ; spades_output_fastp_for_pilon_trim ; spades_fastp_sorting }
+spades_output_trimmomatic.into { spades_output_quast_trimmomatic ; spades_trimmomatic_sorting}
+
+spades_id_name.into { spades_id_pilon ; spades_id_quast }
 
 process skesa_no_trim{
 	
@@ -381,63 +386,44 @@ process skesa_after_trimmomatic{
 	"""
 }
 
+skesa_output_no_trim.into { skesa_output_quast_no_trim ; skesa_no_trim_sorting }
+skesa_output_fastp.into { skesa_output_quast_fastp ; skesa_fastp_sorting }
+skesa_output_trimmomatic.into { skesa_output_quast_trimmomatic ; skesa_trimmomatic_sorting }
 
-process bowtie2_no_trimming {
 
-	publishDir './Results/No_trimming/Bowtie2', mode: 'copy'
-	
-	input:
-	val reference from reference_index.collect()
-	tuple sampleID, file(reads) from raw_data_for_bowtie2
-	
-	output:
-	file "${sampleID}/*" into bowtie_all
-	val "${sampleID}" into bowtie_id_name
-	stdout result2
-	
-	when:
-	params.assembly_improvement == true
-	
-	script:
-	// Tar bort allt som har med bowtie index att göra på ett av namnen så endast namnet är med
-	index_base = reference[0].toString() - ~/.rev.\d.bt2|.\d.bt2/
-	
-	"""
-	echo $reference
-	echo ${reference[0]}
-	mkdir ${sampleID}
-	bowtie2 -x ${index_base} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}/${sampleID}_sorted_alignment.bam
-	samtools index ${sampleID}/${sampleID}_sorted_alignment.bam
-	"""
-}
+//merge spades id with spades output files 
+spades_merge = spades_id_pilon.merge(spades_output_for_pilon_no_trim)
+//join the raw data for bowtie with the spades results by using sampleID as key
+spades_raw_data_join = spades_merge.join(raw_data_for_bowtie2)
 
-process pilon_no_trimming {
+process pilon_improvement_no_trim {
 
 	publishDir './Results/No_trimming/Pilon', mode: 'copy'
 	
 	input:
-	file scaffold from spades_output_for_pilon_no_trim
-	file alignment from bowtie_all.collect()
-	val sampleID from bowtie_id_name
-	
+	tuple sampleID, file(scaffold), file(scaffold_polish), file(reads) from spades_raw_data_join
 	
 	output:
-	file "${sampleID}/*" into pilon_output
-	
-	when:
-	params.assembly_improvement == true
+	file "${sampleID}/${scaffold}_improved.fasta*" into pilon_output
 	
 	script:
-	// ta bort bam ändelsen
-	bam_file = alignment[0].toString() - ~/.bam*/
-	
+	index_base = scaffold.toString() - ~/.fasta/
+	index_base_polish = scaffold_polish.toString() - ~/.fasta/
 	"""
-	echo $bam_file
 	mkdir ${sampleID}
-	pilon --genome ${scaffold} --frags ${bam_file}.bam --output ${sampleID}/${sampleID}
+	mkdir ${sampleID}/index
+	mkdir ${sampleID}/index_polish
+	bowtie2-build ${scaffold} ${sampleID}/index/$index_base
+	bowtie2 -x ${sampleID}/index/${index_base} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}/${sampleID}_sorted_alignment.bam
+	samtools index ${sampleID}/${sampleID}_sorted_alignment.bam
+	
+	pilon --genome ${scaffold} --frags ${sampleID}/${sampleID}_sorted_alignment.bam --output ${sampleID}/${scaffold}_improved
+	rm *.bam
+	rm *.bai
 	"""
 
 }
+
 
 
 process quast_no_trimming{
@@ -448,9 +434,9 @@ process quast_no_trimming{
 	
 	input:
 	file scaffold from spades_output_for_quast_no_trim
-	file scaffold_skesa from skesa_output_no_trim
+	file scaffold_skesa from skesa_output_quast_no_trim
 	val reference from ref_for_quast_no_trim
-	val sampleID from spades_id_name
+	val sampleID from spades_id_quast
 	val sampleID_skesa from skesa_id_name_no_trim 
 	
 	output:
@@ -473,7 +459,7 @@ process quast_after_fastp{
 	
 	input:
 	file scaffold from spades_output_for_quast_trim
-	file scaffold_skesa from skesa_output_fastp
+	file scaffold_skesa from skesa_output_quast_fastp
 	val reference from ref_for_quast_fastp_trim
 	val sampleID from spades_id_name_fastp 
 	val sampleID_skesa from skesa_id_name_fastp 
@@ -497,8 +483,8 @@ process quast_after_trimmomatic{
 	tag "${sampleID}"
 	
 	input:
-	file scaffold from spades_output_trimmomatic
-	file scaffold_skesa from skesa_output_trimmomatic
+	file scaffold from spades_output_quast_trimmomatic
+	file scaffold_skesa from skesa_output_quast_trimmomatic
 	val reference from ref_for_quast_trimmomatic_trim
 	val sampleID from spades_id_name_trimmomatic
 	val sampleID_skesa from skesa_id_name_trimmomatic
