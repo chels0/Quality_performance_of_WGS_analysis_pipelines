@@ -27,7 +27,7 @@ spades_setting.into { no_trim_settings ; trim_trimmomatic_setting ; trim_fastp_s
 
 process fastqc_raw {
 	
-	publishDir "./Results/$sampleID"+"/FastQC_Raw_reads", mode: 'copy'
+	publishDir "./Results/${sampleID}/FastQC_Raw_reads", mode: 'copy'
 	
 	tag "${sampleID}"
 	
@@ -96,7 +96,7 @@ process fastqc_raw {
 	
 process fastp{
 	
-	publishDir "./Results/$sampleID"+"/"+folder_name+"/Fastp/", mode: 'copy'
+	publishDir "./Results/${sampleID}/"+folder_name+"/Fastp/", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
@@ -104,7 +104,7 @@ process fastp{
 	val folders from folder.collect()
 	
 	output:
-	tuple sampleID, file("./*") into fastp_output
+	tuple sampleID, file("${sampleID}*") into fastp_output
 	file "Reports/*" into fastp_reports
 
 	
@@ -121,8 +121,8 @@ process fastp{
 	
 		"""
 		mkdir Reports
-		fastp -A -L -Q -G -i ${reads[0]} -I ${reads[1]} -o ${reads[0]} -O ${reads[1]}
-		mv fastp* Reports/
+		fastp -A -L -Q -G -i ${reads[0]} -I ${reads[1]} -o ${sampleID}_R1.fq.gz -O ${sampleID}_R2.fq.gz
+		mv fastp* ./Reports
 		""" 
 	
 }
@@ -131,24 +131,20 @@ fastp_output.into { fastp_output_fastqc ; fastp_output_SPAdes ; fastp_output_ske
 
 process fastqc_post_fastp_trim {
 	
-	publishDir './Results/'+folder_name+'/FastQC_post_trim', mode: 'copy'
+	publishDir "./Results/${sampleID}/"+folder_name+"/FastQC_post_trim", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
 	tuple sampleID, file(reads) from fastp_output_fastqc
 	
 	output:
-	file "${sampleID}/*" into fastqc_trim_fastp
+	file "*" into fastqc_trim_fastp
 	
 	when:
 	params.fastp_trim_qc == true
 	
-	//script:
-	//if ( params.fastp_trim_qc  == true || (params.fastp_trim_qc == true && params.fastp_qc == true) )
-	
 	"""
-	mkdir ${sampleID}
-	fastqc ${reads[0]} ${reads[1]} --outdir ${sampleID}
+	fastqc ${reads[0]} ${reads[1]} --outdir .
 
 	"""
 }
@@ -156,7 +152,7 @@ process fastqc_post_fastp_trim {
 
 process trimmomatic{
 
-	publishDir "./Results/$sampleID"+"/Trimmed_w_Trimmomatic/Trimmomatic/", mode: 'copy'
+	publishDir "./Results/$sampleID/Trimmed_w_Trimmomatic/Trimmomatic/", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
@@ -171,8 +167,8 @@ process trimmomatic{
 	params.trimmomatic == true
 	
 	"""
-	lead="\$(head -n 1 ../${f_r})"
-	trail="\$(tail -n 1 ../${f_r})"
+	lead="\$(head -n 1 ${f_r})"
+	trail="\$(tail -n 1 ${f_r})"
 	
 	trimmomatic PE ${reads[0]} ${reads[1]} ${sampleID}_R1_paired.fq.gz ${sampleID}_R1_unpaired.fq.gz ${sampleID}_R2_paired.fq.gz ${sampleID}_R2_unpaired.fq.gz LEADING:\$lead TRAILING:\$trail ${settings}
 	"""
@@ -183,26 +179,25 @@ trimmomatic_output.into { trimmomatic_output_for_SPAdes ; trimmomatic_output_for
 
 process fastqc_post_trimmomatic {
 	
-	publishDir './Results/Trimmed_w_Trimmomatic/FastQC_post_trim', mode: 'copy'
+	publishDir "./Results/${sampleID}/Trimmed_w_Trimmomatic/FastQC_post_trim", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
 	tuple sampleID, file(reads) from trimmomatic_output_for_FastQC
 
 	output:
-	file "${sampleID}/*" into fastqc_raw
+	file "*" into fastqc_raw
 	
 	
 	"""
-	mkdir ${sampleID}
-	fastqc ${reads[0]} ${reads[1]} --outdir ${sampleID}
+	fastqc ${reads[0]} ${reads[1]} --outdir .
 
 	"""
 }
 
 process spades_no_trim{
 	
-	publishDir "./Results/$sampleID"+"No_trimming/SPAdes", mode: 'copy'
+	publishDir "./Results/${sampleID}/No_trimming/SPAdes", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
@@ -212,6 +207,7 @@ process spades_no_trim{
 	
 	output:
 	tuple sampleID, file("${sampleID}*") into spades_output
+	file "*" into spades_all
 	
 	when:
 	params.no_trim == true
@@ -227,7 +223,7 @@ process spades_no_trim{
 
 process spades_after_fastp{
 	
-	publishDir './Results/'+folder_name+'/SPAdes', mode: 'copy'
+	publishDir "./Results/${sampleID}/"+folder_name+"/SPAdes", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
@@ -236,17 +232,16 @@ process spades_after_fastp{
 	val settings from trim_fastp_setting
 
 	output:
-	tuple sampleID, file("${sampleID}/${sampleID}*") into spades_output_fastp
-	file "${sampleID}/*" into spades_all_fastp
+	tuple sampleID, file("${sampleID}*") into spades_output_fastp
+	file "*" into spades_all_fastp
 
  	
  	when:
  	params.fastp_trim_qc == true
  	
  	"""
-	spades.py -1 ${reads[0]} -2 ${reads[1]} -o $sampleID ${settings}
-	mv ${sampleID}/scaffolds.fasta ${sampleID}/${sampleID}_trimmed_fastp_spades_scaffolds.fasta
-	cd ${sampleID}
+	spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
+	mv scaffolds.fasta ${sampleID}_trimmed_fastp_spades_scaffolds.fasta
 	python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_trimmed_fastp_spades_scaffolds 300
 	"""
 
@@ -254,25 +249,24 @@ process spades_after_fastp{
 
 process spades_after_trimmomatic{
 	
-	publishDir './Results/Trimmed_w_Trimmomatic/SPAdes', mode: 'copy'
+	publishDir "./Results/${sampleID}/Trimmed_w_Trimmomatic/SPAdes", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
-	tuple sampleID, file("${sampleID}/*_paired.fq.gz") from trimmomatic_output_for_SPAdes
+	tuple sampleID, file(reads) from trimmomatic_output_for_SPAdes
 	val script_folder from script_spades_trimmomatic
 	val settings from trim_trimmomatic_setting
 
 	output:
-	tuple sampleID, file("${sampleID}/${sampleID}*") into spades_output_trimmomatic
-	file "${sampleID}/*" into spades_all_trimmomatic
+	tuple sampleID, file("${sampleID}*") into spades_output_trimmomatic
+	file "*" into spades_all_trimmomatic
 
  	when:
  	params.trimmomatic==true
 
 	"""
-	spades.py -1 ${reads[0]} -2 ${reads[1]} -o $sampleID ${settings}
-	mv ${sampleID}/scaffolds.fasta ${sampleID}/${sampleID}_trimmed_trimmomatic_spades_scaffolds.fasta
-	cd ${sampleID}
+	spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
+	mv scaffolds.fasta ${sampleID}_trimmed_trimmomatic_spades_scaffolds.fasta
 	python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_trimmed_trimmomatic_spades_scaffolds 300
 	"""
 
@@ -286,7 +280,7 @@ spades_output_trimmomatic.into { spades_output_quast_trimmomatic ; spades_output
 
 process skesa_no_trim{
 	
-	publishDir "./Results/$sampleID"+"No_trimming/SKESA", mode: 'copy'
+	publishDir "./Results/${sampleID}/No_trimming/SKESA", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
@@ -309,7 +303,7 @@ process skesa_no_trim{
 
 process skesa_after_fastp{
 	
-	publishDir './Results/'+folder_name+'/SKESA', mode: 'copy'
+	publishDir "./Results/${sampleID}"+folder_name+"/SKESA", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
@@ -317,22 +311,20 @@ process skesa_after_fastp{
 	val script_folder from script_skesa_fastp
 	
 	output:
-	tuple sampleID, file("${sample}/${sample}*") into skesa_output_fastp
+	tuple sampleID, file("${sampleID}*") into skesa_output_fastp
 	
 	when:
 	params.fastp_trim_qc == true
 
 	"""
-	mkdir ${sampleID}
-	skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}/${sampleID}_trimmed_fastp_skesa_contigs.fasta
-	cd ${sample}
+	skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_trimmed_fastp_skesa_contigs.fasta
 	python3 ${script_folder}/remove_contaminants.py ${sampleID}_trimmed_fastp_skesa_contigs 300
 	"""
 }
 
 process skesa_after_trimmomatic{
 	
-	publishDir './Results/Trimmed_w_Trimmomatic/SKESA', mode: 'copy'
+	publishDir "./Results/${sampleID}/Trimmed_w_Trimmomatic/SKESA", mode: 'copy'
 	
 	tag "${sampleID}"
 	
@@ -341,15 +333,13 @@ process skesa_after_trimmomatic{
 	val script_folder from script_skesa_trimmomatic
 	
 	output:
-	tuple sampleID, file("${sample}/${sample}*") into skesa_output_trimmomatic
+	tuple sampleID, file("${sampleID}*") into skesa_output_trimmomatic
 	
 	when:
 	params.trimmomatic == true
 
 	"""
-	mkdir ${sampleID}
-	skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}/${sampleID}_trimmed_trimmomatic_skesa_contigs.fasta
-	cd ${sampleID}
+	skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_trimmed_trimmomatic_skesa_contigs.fasta
 	python3 ${script_folder}/remove_contaminants.py ${sampleID}_trimmed_trimmomatic_skesa_contigs 300
 	"""
 }
@@ -370,13 +360,13 @@ skesa_raw_fastp_join = skesa_fastp_pilon.join(raw_data_for_bowtie2_skesa_fastp)
 
 process pilon_post_spades_no_trim {
 
-	publishDir "./Results/$sampleID"+"No_trimming/Pilon/SPAdes", mode: 'copy'
+	publishDir "./Results/${sampleID}/No_trimming/Pilon/SPAdes", mode: 'copy'
 	
 	input:
 	tuple sampleID, file(scaffold), file(reads) from spades_raw_data_join
 	
 	output:
-	tuple sampleID, file("${sampleID}/${sampleID}*") into pilon_output_spades_no_trim
+	tuple sampleID, file("${sampleID}*") into pilon_output_spades_no_trim
 	
 	when:
 	params.assembly_improvement==true && params.no_trim==true
@@ -411,13 +401,13 @@ process pilon_post_spades_no_trim {
 
 process pilon_post_spades_fastp {
 
-	publishDir './Results/+folder_name+/Pilon/SPAdes', mode: 'copy'
+	publishDir "./Results/${sampleID}/"+folder_name+"/Pilon/SPAdes", mode: 'copy'
 	
 	input:
 	tuple sampleID, file(scaffold), file(reads) from spades_raw_fastp_join
 	
 	output:
-	tuple sampleID, file("${sampleID}/${sampleID}*") into pilon_output_spades_fastp
+	tuple sampleID, file("${sampleID}*") into pilon_output_spades_fastp
 	
 	when:
 	params.assembly_improvement==true && params.fastp_trim_qc==true
@@ -427,26 +417,25 @@ process pilon_post_spades_fastp {
 	index_base_polish = scaffold[1].toString() - ~/.fasta/
 	
 	"""
-	mkdir ${sampleID}
-	mkdir ${sampleID}/index
-	bowtie2-build ${scaffold[0]} ${sampleID}/index/$index_base
-	bowtie2 -x ${sampleID}/index/${index_base} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}/${sampleID}_sorted_alignment.bam
-	samtools index ${sampleID}/${sampleID}_sorted_alignment.bam
+	mkdir index
+	bowtie2-build ${scaffold[0]} index/$index_base
+	bowtie2 -x index/${index_base} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}_sorted_alignment.bam
+	samtools index ${sampleID}_sorted_alignment.bam
 	
-	pilon --genome ${scaffold[0]} --frags ${sampleID}/${sampleID}_sorted_alignment.bam --output ${sampleID}/${index_base}_improved
+	pilon --genome ${scaffold[0]} --frags ${sampleID}_sorted_alignment.bam --output ${index_base}_improved
 	
-	rm ${sampleID}/*.bam
-	rm ${sampleID}/*.bai
+	rm *.bam
+	rm *.bai
 	
-	mkdir ${sampleID}/index_polish
-	bowtie2-build ${scaffold[1]} ${sampleID}/index_polish/$index_base_polish
-	bowtie2 -x ${sampleID}/index_polish/${index_base_polish} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}/${sampleID}_polished_sorted_alignment.bam
-	samtools index ${sampleID}/${sampleID}_polished_sorted_alignment.bam
+	mkdir index_polish
+	bowtie2-build ${scaffold[1]} index_polish/$index_base_polish
+	bowtie2 -x index_polish/${index_base_polish} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}_polished_sorted_alignment.bam
+	samtools index ${sampleID}_polished_sorted_alignment.bam
 	
-	pilon --genome ${scaffold[1]} --frags ${sampleID}/${sampleID}_polished_sorted_alignment.bam --output ${sampleID}/${index_base_polish}_improved
+	pilon --genome ${scaffold[1]} --frags ${sampleID}_polished_sorted_alignment.bam --output ${index_base_polish}_improved
 	
-	rm ${sampleID}/*.bam
-	rm ${sampleID}/*.bai
+	rm *.bam
+	rm *.bai
 	"""
 	
 
@@ -454,13 +443,13 @@ process pilon_post_spades_fastp {
 
 process pilon_post_spades_trimmomatic {
 
-	publishDir './Results/Trimmed_w_Trimmomatic/Pilon/SPAdes', mode: 'copy'
+	publishDir "./Results/${sampleID}/Trimmed_w_Trimmomatic/Pilon/SPAdes", mode: 'copy'
 	
 	input:
 	tuple sampleID, file(scaffold), file(reads) from spades_raw_trimmomatic_join
 	
 	output:
-	tuple sampleID, file("${sampleID}/${sampleID}*") into pilon_output_spades_trimmomatic
+	tuple sampleID, file("${sampleID}*") into pilon_output_spades_trimmomatic
 	
 	when:
 	params.assembly_improvement==true && params.trimmomatic==true
@@ -469,26 +458,25 @@ process pilon_post_spades_trimmomatic {
 	index_base = scaffold[0].toString() - ~/.fasta/
 	index_base_polish = scaffold[1].toString() - ~/.fasta/
 	"""
-	mkdir ${sampleID}
-	mkdir ${sampleID}/index
-	bowtie2-build ${scaffold[0]} ${sampleID}/index/$index_base
-	bowtie2 -x ${sampleID}/index/${index_base} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}/${sampleID}_sorted_alignment.bam
-	samtools index ${sampleID}/${sampleID}_sorted_alignment.bam
+	mkdir index
+	bowtie2-build ${scaffold[0]} index/$index_base
+	bowtie2 -x index/${index_base} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}_sorted_alignment.bam
+	samtools index ${sampleID}_sorted_alignment.bam
 	
-	pilon --genome ${scaffold[0]} --frags ${sampleID}/${sampleID}_sorted_alignment.bam --output ${sampleID}/${index_base}_improved
+	pilon --genome ${scaffold[0]} --frags ${sampleID}_sorted_alignment.bam --output ${index_base}_improved
 	
-	rm ${sampleID}/*.bam
-	rm ${sampleID}/*.bai
+	rm *.bam
+	rm *.bai
 	
-	mkdir ${sampleID}/index_polish
-	bowtie2-build ${scaffold[1]} ${sampleID}/index_polish/$index_base_polish
-	bowtie2 -x ${sampleID}/index_polish/${index_base_polish} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}/${sampleID}_polished_sorted_alignment.bam
-	samtools index ${sampleID}/${sampleID}_polished_sorted_alignment.bam
+	mkdir index_polish
+	bowtie2-build ${scaffold[1]} index_polish/$index_base_polish
+	bowtie2 -x index_polish/${index_base_polish} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}_polished_sorted_alignment.bam
+	samtools index ${sampleID}_polished_sorted_alignment.bam
 	
-	pilon --genome ${scaffold[1]} --frags ${sampleID}/${sampleID}_polished_sorted_alignment.bam --output ${sampleID}/${index_base_polish}_improved
+	pilon --genome ${scaffold[1]} --frags ${sampleID}_polished_sorted_alignment.bam --output ${index_base_polish}_improved
 	
-	rm ${sampleID}/*.bam
-	rm ${sampleID}/*.bai
+	rm *.bam
+	rm *.bai
 	"""
 	
 
@@ -496,7 +484,7 @@ process pilon_post_spades_trimmomatic {
 
 process pilon_post_skesa_no_trim {
 
-	publishDir "./Results/$sampleID"+"No_trimming/Pilon/SKESA", mode: 'copy'
+	publishDir "./Results/${sampleID}/No_trimming/Pilon/SKESA", mode: 'copy'
 	
 	input:
 	tuple sampleID, file(scaffold), file(reads) from skesa_raw_data_join
@@ -537,13 +525,13 @@ process pilon_post_skesa_no_trim {
 
 process pilon_post_skesa_fastp {
 
-	publishDir './Results/+folder_name+/Pilon/SKESA', mode: 'copy'
+	publishDir "./Results/${sampleID}/"+folder_name+"/Pilon/SKESA", mode: 'copy'
 	
 	input:
 	tuple sampleID, file(scaffold), file(reads) from skesa_raw_fastp_join
 	
 	output:
-	tuple sampleID, file("${sampleID}/${sampleID}*") into pilon_output_skesa_fastp
+	tuple sampleID, file("${sampleID}*") into pilon_output_skesa_fastp
 	
 	params.assembly_improvement==true && params.fastp_trim_qc==true
 	
@@ -551,26 +539,25 @@ process pilon_post_skesa_fastp {
 	index_base = scaffold[0].toString() - ~/.fasta/
 	index_base_polish = scaffold[1].toString() - ~/.fasta/
 	"""
-	mkdir ${sampleID}
-	mkdir ${sampleID}/index
-	bowtie2-build ${scaffold[0]} ${sampleID}/index/$index_base
-	bowtie2 -x ${sampleID}/index/${index_base} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}/${sampleID}_sorted_alignment.bam
-	samtools index ${sampleID}/${sampleID}_sorted_alignment.bam
+	mkdir index
+	bowtie2-build ${scaffold[0]} index/$index_base
+	bowtie2 -x index/${index_base} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}_sorted_alignment.bam
+	samtools index ${sampleID}_sorted_alignment.bam
 	
-	pilon --genome ${scaffold[0]} --frags ${sampleID}/${sampleID}_sorted_alignment.bam --output ${sampleID}/${index_base}_improved
+	pilon --genome ${scaffold[0]} --frags ${sampleID}_sorted_alignment.bam --output ${index_base}_improved
 	
-	rm ${sampleID}/*.bam
-	rm ${sampleID}/*.bai
+	rm *.bam
+	rm *.bai
 	
-	mkdir ${sampleID}/index_polish
-	bowtie2-build ${scaffold[1]} ${sampleID}/index_polish/$index_base_polish
-	bowtie2 -x ${sampleID}/index_polish/${index_base_polish} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}/${sampleID}_polished_sorted_alignment.bam
-	samtools index ${sampleID}/${sampleID}_polished_sorted_alignment.bam
+	mkdir index_polish
+	bowtie2-build ${scaffold[1]} index_polish/$index_base_polish
+	bowtie2 -x index_polish/${index_base_polish} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}_polished_sorted_alignment.bam
+	samtools index ${sampleID}_polished_sorted_alignment.bam
 	
-	pilon --genome ${scaffold[1]} --frags ${sampleID}/${sampleID}_polished_sorted_alignment.bam --output ${sampleID}/${index_base_polish}_improved
+	pilon --genome ${scaffold[1]} --frags ${sampleID}_polished_sorted_alignment.bam --output ${index_base_polish}_improved
 	
-	rm ${sampleID}/*.bam
-	rm ${sampleID}/*.bai
+	rm *.bam
+	rm *.bai
 	"""
 	
 
@@ -578,13 +565,13 @@ process pilon_post_skesa_fastp {
 
 process pilon_post_skesa_trimmomatic {
 
-	publishDir './Results/Trimmed_w_Trimmomatic/Pilon/SKESA', mode: 'copy'
+	publishDir "./Results/${sampleID}/Trimmed_w_Trimmomatic/Pilon/SKESA", mode: 'copy'
 	
 	input:
 	tuple sampleID, file(scaffold), file(reads) from skesa_raw_trimmomatic_join
 	
 	output:
-	tuple sampleID, file("${sampleID}/${sampleID}*") into pilon_output_skesa_trimmomatic
+	tuple sampleID, file("${sampleID}*") into pilon_output_skesa_trimmomatic
 	
 	when:
 	params.assembly_improvement==true && params.trimmomatic==true
@@ -593,26 +580,25 @@ process pilon_post_skesa_trimmomatic {
 	index_base = scaffold[0].toString() - ~/.fasta/
 	index_base_polish = scaffold[1].toString() - ~/.fasta/
 	"""
-	mkdir ${sampleID}
-	mkdir ${sampleID}/index
-	bowtie2-build ${scaffold[0]} ${sampleID}/index/$index_base
-	bowtie2 -x ${sampleID}/index/${index_base} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}/${sampleID}_sorted_alignment.bam
-	samtools index ${sampleID}/${sampleID}_sorted_alignment.bam
+	mkdir index
+	bowtie2-build ${scaffold[0]} index/$index_base
+	bowtie2 -x index/${index_base} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}_sorted_alignment.bam
+	samtools index ${sampleID}_sorted_alignment.bam
 	
-	pilon --genome ${scaffold[0]} --frags ${sampleID}/${sampleID}_sorted_alignment.bam --output ${sampleID}/${index_base}_improved
+	pilon --genome ${scaffold[0]} --frags ${sampleID}_sorted_alignment.bam --output ${index_base}_improved
 	
-	rm ${sampleID}/*.bam
-	rm ${sampleID}/*.bai
+	rm *.bam
+	rm *.bai
 	
-	mkdir ${sampleID}/index_polish
-	bowtie2-build ${scaffold[1]} ${sampleID}/index_polish/$index_base_polish
-	bowtie2 -x ${sampleID}/index_polish/${index_base_polish} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}/${sampleID}_polished_sorted_alignment.bam
-	samtools index ${sampleID}/${sampleID}_polished_sorted_alignment.bam
+	mkdir index_polish
+	bowtie2-build ${scaffold[1]} index_polish/$index_base_polish
+	bowtie2 -x index_polish/${index_base_polish} -1 ${reads[0]} -2 ${reads[1]} -p 4 | samtools sort -@ 4 -o ${sampleID}_polished_sorted_alignment.bam
+	samtools index ${sampleID}_polished_sorted_alignment.bam
 	
-	pilon --genome ${scaffold[1]} --frags ${sampleID}/${sampleID}_polished_sorted_alignment.bam --output ${sampleID}/${index_base_polish}_improved
+	pilon --genome ${scaffold[1]} --frags ${sampleID}_polished_sorted_alignment.bam --output ${index_base_polish}_improved
 	
-	rm ${sampleID}/*.bam
-	rm ${sampleID}/*.bai
+	rm *.bam
+	rm *.bai
 	"""
 	
 
@@ -620,7 +606,7 @@ process pilon_post_skesa_trimmomatic {
 
 process quast_no_trimming{
 	
-	publishDir "./Results/$sampleID"+"No_trimming/Quast/No_improvement", mode: 'copy'
+	publishDir "./Results/${sampleID}/No_trimming/Quast/No_improvement", mode: 'copy'
 	
 	tag "${sampleID}"
 	
@@ -644,7 +630,7 @@ process quast_no_trimming{
 
 process quast_after_fastp{
 	
-	publishDir './Results/'+folder_name+'/Quast/No_improvement', mode: 'copy'
+	publishDir "./Results/${sampleID/}"+folder_name+"/Quast/No_improvement", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
@@ -653,21 +639,21 @@ process quast_after_fastp{
 	val reference from ref_for_quast_no_trim
 	
 	output:
-	file "SPAdes/${sampleID}/*" into quast_output_spades_fastp
-	file "SKESA/${sampleID_skesa}/*" into quast_output_skesa_fastp
+	file "SPAdes/*" into quast_output_spades_fastp
+	file "SKESA/*" into quast_output_skesa_fastp
 
 	
 	"""
-	quast.py ${assembly[0]} -o SPAdes/$sampleID/Not_polished -r $reference
-	quast.py ${assembly[1]} -o SPAdes/$sampleID/Polished -r $reference
-	quast.py ${assembly_skesa[0]} -o SKESA/$sampleID_skesa/Not_polished -r $reference
-	quast.py ${assembly_skesa[1]} -o SKESA/$sampleID_skesa/Polished -r $reference
+	quast.py ${assembly[0]} -o SPAdes/Not_polished -r $reference
+	quast.py ${assembly[1]} -o SPAdes/Polished -r $reference
+	quast.py ${assembly_skesa[0]} -o SKESA/Not_polished -r $reference
+	quast.py ${assembly_skesa[1]} -o SKESA/Polished -r $reference
 	"""
 }
 
 process quast_after_trimmomatic{
 	
-	publishDir './Results/Trimmed_w_Trimmomatic/Quast/No_improvement', mode: 'copy'
+	publishDir "./Results/${sampleID}/Trimmed_w_Trimmomatic/Quast/No_improvement", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
@@ -676,21 +662,21 @@ process quast_after_trimmomatic{
 	val reference from ref_for_quast_no_trim
 	
 	output:
-	file "SPAdes/${sampleID}/*" into quast_output_spades_trimmomatic
-	file "SKESA/${sampleID_skesa}/*" into quast_output_skesa_trimmomatic
+	file "SPAdes/*" into quast_output_spades_trimmomatic
+	file "SKESA/*" into quast_output_skesa_trimmomatic
 
 	
 	"""
-	quast.py ${assembly[0]} -o SPAdes/$sampleID/Not_polished -r $reference
-	quast.py ${assembly[1]} -o SPAdes/$sampleID/Polished -r $reference
-	quast.py ${assembly_skesa[0]} -o SKESA/$sampleID_skesa/Not_polished -r $reference
-	quast.py ${assembly_skesa[1]} -o SKESA/$sampleID_skesa/Polished -r $reference
+	quast.py ${assembly[0]} -o SPAdes/Not_polished -r $reference
+	quast.py ${assembly[1]} -o SPAdes/Polished -r $reference
+	quast.py ${assembly_skesa[0]} -o SKESA/Not_polished -r $reference
+	quast.py ${assembly_skesa[1]} -o SKESA/Polished -r $reference
 	"""
 }
 
 process quast_no_trimming_improved{
 	
-	publishDir "./Results/$sampleID"+"No_trimming/Quast/Improved_assembly", mode: 'copy'
+	publishDir "./Results/${sampleID}/No_trimming/Quast/Improved_assembly", mode: 'copy'
 	
 	tag "${sampleID}"
 	
@@ -714,7 +700,7 @@ process quast_no_trimming_improved{
 
 process quast_after_fastp_improved{
 	
-	publishDir './Results/No_trimming/Quast/Improved_assembly', mode: 'copy'
+	publishDir "./Results/${sampleID}/No_trimming/Quast/Improved_assembly", mode: 'copy'
 	
 	tag "${sampleID}"
 	
@@ -724,21 +710,21 @@ process quast_after_fastp_improved{
 	val reference from ref_for_quast_no_trim
 	
 	output:
-	file "SPAdes/${sampleID}/*" into quast_output_spades_improved_fastp
-	file "SKESA/${sampleID_skesa}/*" into quast_output_skesa_improved_fastp
+	file "SPAdes/*" into quast_output_spades_improved_fastp
+	file "SKESA/*" into quast_output_skesa_improved_fastp
 
 	
 	"""
-	quast.py ${assembly[0]} -o SPAdes/$sampleID/Not_polished -r $reference
-	quast.py ${assembly[1]} -o SPAdes/$sampleID/Polished -r $reference
-	quast.py ${assembly_skesa[0]} -o SKESA/$sampleID_skesa/Not_polished -r $reference
-	quast.py ${assembly_skesa[1]} -o SKESA/$sampleID_skesa/Polished -r $reference
+	quast.py ${assembly[0]} -o SPAdes/Not_polished -r $reference
+	quast.py ${assembly[1]} -o SPAdes/Polished -r $reference
+	quast.py ${assembly_skesa[0]} -o SKESA/Not_polished -r $reference
+	quast.py ${assembly_skesa[1]} -o SKESA/Polished -r $reference
 	"""
 }
 
 process quast_after_trimmomatic_improved{
 	
-	publishDir './Results/No_trimming/Quast/Improved_assembly', mode: 'copy'
+	publishDir "./Results/${sampleID}/No_trimming/Quast/Improved_assembly", mode: 'copy'
 	
 	tag "${sampleID}"
 	
@@ -748,15 +734,15 @@ process quast_after_trimmomatic_improved{
 	val reference from ref_for_quast_no_trim
 	
 	output:
-	file "SPAdes/${sampleID}/*" into quast_output_spades_improved_trimmomatic
-	file "SKESA/${sampleID_skesa}/*" into quast_output_skesa_improved_trimmomatic
+	file "SPAdes/*" into quast_output_spades_improved_trimmomatic
+	file "SKESA/*" into quast_output_skesa_improved_trimmomatic
 
 	
 	"""
-	quast.py ${assembly[0]} -o SPAdes/$sampleID/Not_polished -r $reference
-	quast.py ${assembly[1]} -o SPAdes/$sampleID/Polished -r $reference
-	quast.py ${assembly_skesa[0]} -o SKESA/$sampleID_skesa/Not_polished -r $reference
-	quast.py ${assembly_skesa[1]} -o SKESA/$sampleID_skesa/Polished -r $reference
+	quast.py ${assembly[0]} -o SPAdes/Not_polished -r $reference
+	quast.py ${assembly[1]} -o SPAdes/Polished -r $reference
+	quast.py ${assembly_skesa[0]} -o SKESA/Not_polished -r $reference
+	quast.py ${assembly_skesa[1]} -o SKESA/Polished -r $reference
 	"""
 }
 
