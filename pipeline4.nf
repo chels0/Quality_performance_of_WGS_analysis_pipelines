@@ -630,7 +630,7 @@ process quast_no_trimming{
 
 process quast_after_fastp{
 	
-	publishDir "./Results/${sampleID/}"+folder_name+"/Quast/No_improvement", mode: 'copy'
+	publishDir "./Results/${sampleID}/"+folder_name+"/Quast/No_improvement", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
