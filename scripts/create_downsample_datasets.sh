@@ -6,9 +6,9 @@
 coverages=( 20 50 100 )
 
 #Create directories for each coverage value
-mkdir /data/Raw_data/${coverages[0]}x_coverage
-mkdir /data/Raw_data/${coverages[1]}x_coverage
-mkdir /data/Raw_data/${coverages[2]}x_coverage
+mkdir Raw_data/${coverages[0]}x_coverage
+mkdir Raw_data/${coverages[1]}x_coverage
+mkdir Raw_data/${coverages[2]}x_coverage
 
 #Loop through each of the samples and coverage values to calculate the coverages using Rasusa.
 for sample in {1..4} #loops through samples
@@ -22,10 +22,8 @@ do
 	do
 		for coverage_value in ${coverages[@]} #loop through coverages
 		do
-		rasusa -i Raw_data/${prefix}_R1.fastq.gz -i Raw_data/${prefix}_R2.fastq.gz --coverage ${coverage_value} --genome-size 1.8m -O g -o /data/Raw_data/${coverage_value}x_coverage/${prefix}_${coverage_value}x_R1.fastq.gz -o /data/Raw_data/${coverage_value}x_coverage/${prefix}_${coverage_value}x_R2.fastq.gz #calculate coverages
+		rasusa -i Raw_data/${prefix}_R1.fastq.gz -i Raw_data/${prefix}_R2.fastq.gz --coverage ${coverage_value} --genome-size 1.8m -O g -o Raw_data/${coverage_value}x_coverage/${prefix}_${coverage_value}x_R1.fastq.gz -o Raw_data/${coverage_value}x_coverage/${prefix}_${coverage_value}x_R2.fastq.gz #calculate coverages
 		done
 	done
 done
-
-
 

@@ -20,12 +20,15 @@ do
 	cp ${path_no_trim}/SPAdes/${dir}/*_scaffolds.fasta Results/all_assemblies/.
 	cp ${path_fastp}/SPAdes/${dir}/*_polished.fasta Results/all_assemblies/.
 	cp ${path_fastp}/SPAdes/${dir}/*_scaffolds.fasta Results/all_assemblies/.
-	cp -s ${path_trimmomatic}/SPAdes/${dir}/*_polished.fasta Results/all_assemblies/.
-	cp -s ${path_trimmomatic}/SPAdes/${dir}/*_scaffolds.fasta Results/all_assemblies/.
+	cp ${path_trimmomatic}/SPAdes/${dir}/*_polished.fasta Results/all_assemblies/.
+	cp ${path_trimmomatic}/SPAdes/${dir}/*_scaffolds.fasta Results/all_assemblies/.
+	cp ${path_no_trim}/Pilon/SPAdes/${dir}/* Results/all_assemblies/.
 	
 	cp ${path_no_trim}/SKESA/${dir}/*.fasta Results/all_assemblies/.
 	cp ${path_no_trim}/SKESA/${dir}/*.fasta Results/all_assemblies/.
 	cp ${path_fastp}/SKESA/${dir}/*.fasta Results/all_assemblies/.
+	cp ${path_no_trim}/Pilon/SKESA/${dir}/* Results/all_assemblies
+
 done
 #for  i in $(seq1 $nr_of_files)
 #do
