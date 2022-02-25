@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #script for placing all assemblies in one folder for chewbbaca
-
+#this version is for the following directory order no_trimming --> software --> sample
 
 
 nr_of_files=$(ls Results/No_trimming/SPAdes/ | wc -l)

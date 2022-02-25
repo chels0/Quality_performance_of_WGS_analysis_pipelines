@@ -1,13 +1,18 @@
 #!/usr/bin/env nextflow
 
 
-genomes = Channel.fromFilePairs(params.path_to_reads)
+
+
+genomes = Channel.fromFilePairs(params.path_to_reads).ifEmpty { error "Missing input reads, directory is either empty or missing read pair" }
+
 genomes.into { raw_data_for_Fastp; raw_data_for_trimmomatic; raw_data_for_spades; raw_data_for_bowtie2_spades_no_trim ; raw_data_for_bowtie2_skesa_no_trim ; raw_data_for_bowtie2_spades_fastp ; raw_data_for_bowtie2_skesa_fastp ; raw_data_for_bowtie2_spades_trimmomatic ; raw_data_for_bowtie2_skesa_trimmomatic ; raw_data_for_fastqc ; raw_data_for_skesa}
 
-reference = Channel.value(params.path_to_reference)
-reference.into { ref_for_quast_no_trim ; ref_for_quast_fastp_trim ; ref_for_quast_trimmomatic_trim }
+reference = Channel.value(params.path_to_reference).ifEmpty { error "No reference genome. Add reference genome to Raw_data directory" }
 
-//reference_index = Channel.value(params.path_to_bowtie2_index)
+reference.collect().size().view()
+
+
+reference.into { ref_for_quast_no_trim ; ref_for_quast_fastp_trim ; ref_for_quast_trimmomatic_trim }
 
 if ( params.fastp_trim_qc == false )
 	folder_name = 'No_trimming'
