@@ -2,7 +2,7 @@
 
 #create path to cgMLST
 
-path=/mnt/bigdisk
+path=/home/chelsea/Documents
 
 mkdir Results/chewbbaca/Jejuni
 
@@ -10,4 +10,4 @@ cat Raw_data/Campylobacter_jejuni/Schema/Cjejuni_cgMLST_678_listGenes.txt | sed 
 
 #Allele call
 
-chewBBACA.py AlleleCall -i ${path}/Quality_performance_of_WGS_analysis_pipelines/Results/all_assemblies/ -g Results/chewbbaca/Jejuni/fullpath_cgMLSTschema.txt -o cgMLST --cpu 2
+chewBBACA.py AlleleCall -i Results/all_assemblies/ -g Results/chewbbaca/Jejuni/fullpath_cgMLSTschema.txt --cpu 4 -o Results/chewbbaca/Jejuni/results_cgMLST

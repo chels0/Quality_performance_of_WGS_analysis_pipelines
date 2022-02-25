@@ -2,15 +2,17 @@
 
 #Create schema
 
-path=/mnt/bigdisk
+path=/home/chelsea/Documents
 
 #mkdir Results/chewbbaca/Coli
 
-chewBBACA.py CreateSchema -i Raw_data/genome_assemblies_genome_fasta/ncbi-genomes*/ -o Results/chewbbaca/Coli/coli_schema --ptf Raw_data/Campylobacter_coli.trn --cpu 2
+mkdir Results/chewbbaca/Coli
+
+chewBBACA.py CreateSchema -i Raw_data/coli_genomes/ -o Results/chewbbaca/Coli/coli_schema --ptf Raw_data/Campylobacter_coli.trn --cpu 6
 
 #Allele calling for wgMLST
 
-chewBBACA.py AlleleCall -i Raw_data/genome_assemblies_genome_fasta/ncbi-genomes-2022-02-22/ -g Results/chewbbaca/Coli/coli_schema/ -o Results/chewbbaca/Coli/coli_wgMLST --cpu 2
+chewBBACA.py AlleleCall -i Raw_data/coli_genomes/ -g Results/chewbbaca/Coli/coli_schema/ -o Results/chewbbaca/Coli/coli_wgMLST --cpu 6
 
 mv Results/chewbbaca/Coli/coli_wgMLST/result*/* Results/chewbbaca/Coli/coli_wgMLST/
 
@@ -32,4 +34,4 @@ cat Results/chewbbaca/Coli/coli_cgMLST/cgMLSTschema.txt |sed -e "s|^|/${path}/Qu
 
 #Allele call cgMLST
 
-chewBBACA.py AlleleCall -i Results/all_assemblies/ -g Results/chewbbaca/Coli/coli_cgMLST/fullpath_cgMLSTschema.txt -o Results/chewbbaca/Coli/Results_cgMLST_coli --cpu 2
+chewBBACA.py AlleleCall -i Results/all_assemblies/ -g Results/chewbbaca/Coli/coli_cgMLST/fullpath_cgMLSTschema.txt -o Results/chewbbaca/Coli/Results_cgMLST_coli --cpu 6
