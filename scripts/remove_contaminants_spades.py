@@ -42,7 +42,7 @@ for i in range(len(contigs)):
 
 del lista[empty[0]:]
 
-with open(fasta_name+'_polished.fasta', 'w') as file2:
+with open(fasta_name+'_filtered.fasta', 'w') as file2:
     for line in lista:
         file2.write("%s" % line)
                

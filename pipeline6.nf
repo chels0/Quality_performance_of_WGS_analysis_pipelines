@@ -5,19 +5,7 @@ genomes = Channel.fromFilePairs(params.path_to_reads).ifEmpty { error "Missing i
 genomes.into { raw_data_for_Fastp_trim; raw_data_for_Fastp_raw ; raw_data_for_trimmomatic; raw_data_for_spades; raw_data_for_bowtie2_spades_no_trim ; raw_data_for_bowtie2_skesa_no_trim ; raw_data_for_bowtie2_spades_fastp ; raw_data_for_bowtie2_skesa_fastp ; raw_data_for_bowtie2_spades_trimmomatic ; raw_data_for_bowtie2_skesa_trimmomatic ; raw_data_for_fastqc ; raw_data_for_skesa}
 
 reference = Channel.value(params.path_to_reference).ifEmpty { error "No reference genome. Add reference genome to Raw_data directory" }
-
-
-
 reference.into { ref_for_quast_no_trim ; ref_for_quast_fastp_trim ; ref_for_quast_trimmomatic_trim }
-
-if ( params.fastp_trim_qc == false )
-	folder_name = 'No_trimming'
-	
-else if ( params.fastp_trim_qc  == true )
-	folder_name = 'Trimmed_w_fastp'
-
-
-folder = Channel.value(folder_name)
 
 scripts_folder = Channel.value(params.path_to_scripts)
 scripts_folder.into { script_fastqc ; script_spades_no_trim ; script_skesa_no_trim ; script_spades_fastp ; script_skesa_fastp ; script_spades_trimmomatic ; script_skesa_trimmomatic}
@@ -240,10 +228,6 @@ process spades_no_trim{
 	output:
 	tuple sampleID, file("${sampleID}*") into spades_output
 	file "*" into spades_all
-	
-	when:
-	params.no_trim == true
-	
 
 	"""
 	spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
