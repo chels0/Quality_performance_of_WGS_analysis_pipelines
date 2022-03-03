@@ -448,8 +448,8 @@ skesa_output_trimmomatic.into { skesa_output_quast_trimmomatic ; skesa_trimmomat
 
 //join the raw data for bowtie with the spades results by using sampleID as key
 spades_raw_data_join = spades_output_for_pilon_no_trim.join(raw_data_for_bowtie2_spades_no_trim)
-spades_raw_trimmomatic_join = spades_output_fastp_for_pilon_trim.join(raw_data_for_bowtie2_spades_trimmomatic)
-spades_raw_fastp_join = spades_output_trimmomatic_for_pilon_trim.join(raw_data_for_bowtie2_spades_fastp)
+spades_raw_trimmomatic_join = spades_output_trimmomatic_for_pilon_trim.join(raw_data_for_bowtie2_spades_trimmomatic)
+spades_raw_fastp_join = spades_output_fastp_for_pilon_trim.join(raw_data_for_bowtie2_spades_fastp)
 
 //join the raw data for bowtie with skesa results by using sampleID as key
 skesa_raw_data_join = skesa_no_trim_pilon.join(raw_data_for_bowtie2_skesa_no_trim)
@@ -560,7 +560,7 @@ process pilon_post_skesa_no_trim {
 	tuple sampleID, file("${sampleID}*") into pilon_output_skesa_no_trim
 	
 	when:
-	params.assembly_improvement==true && params.no_trim==true
+	(params.assembly_improvement==true && params.no_trim==true)
 	
 	script:
 	index_base = scaffold[0].toString() - ~/.fasta/
@@ -590,6 +590,7 @@ process pilon_post_skesa_fastp {
 	output:
 	tuple sampleID, file("${sampleID}*") into pilon_output_skesa_fastp
 	
+	when:
 	params.assembly_improvement==true && params.fastp_trim_qc==true
 	
 	script:
@@ -788,6 +789,7 @@ process quast_after_trimmomatic_improved{
 	quast.py ${assembly_skesa[0]} -o SKESA -r $reference
 	mv SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
 	"""
+
 }
 
 

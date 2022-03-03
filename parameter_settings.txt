@@ -1,4 +1,4 @@
-params.conda_env = '../miniconda3/envs/env_version1'
+params.conda_env = '/home/chelsea/miniconda3/envs/env_version1'
 
 
 profiles{
