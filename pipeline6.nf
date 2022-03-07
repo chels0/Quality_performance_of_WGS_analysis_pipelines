@@ -13,16 +13,20 @@ scripts_folder.into { script_fastqc ; script_spades_no_trim ; script_skesa_no_tr
 trimmomatic_setting = Channel.value(params.trimmomatic_set)
 spades_setting = Channel.value(params.spades_set)
 spades_setting.into { no_trim_settings ; trim_trimmomatic_setting ; trim_fastp_setting }
+filter_setting = Channel.value(params.filter_set)
+filter_setting.into { no_trim_skesa_filter_setting ; fastp_skesa_filter_setting ; trimmomatic_skesa_filter_setting ; no_trim_spades_filter_setting ; fastp_spades_filter_setting ; trimmomatic_spades_filter_setting }
+
 
 out_dir = ""
 filter = params.filter_set
+spades = params.spades_set
 
 if ( params.no_trim == true )
-	out_dir = out_dir+"No_trimming_"
+	out_dir = out_dir+"No_trimming_"+spades+"_"
 if ( params.trimmomatic == true )
-	out_dir = out_dir+"After_trimmomatic_"
+	out_dir = out_dir+"After_trimmomatic_"+spades+"_"
 if ( params.fastp_trim_qc == true )
-	out_dir = out_dir+"After_fastp_"
+	out_dir = out_dir+"After_fastp_"+spades+"_"
 if ( params.filter_contigs == true )
 	out_dir = out_dir+filter+"filter_"
 if ( params.assembly_improvement == true )
@@ -32,7 +36,7 @@ println { out_dir }
 
 process fastqc_raw {
 	
-	publishDir "./Results/${out_dir}/FastQC_Raw_reads/${sampleID}", mode: 'copy'
+	publishDir "./Results/${out_dir}/${sampleID}/FastQC_Raw_reads", mode: 'copy'
 	
 	tag "${sampleID}"
 	
@@ -101,7 +105,7 @@ process fastqc_raw {
 
 process fastp_qc_raw{
 	
-	publishDir "./Results/${out_dir}/Fastp_QC_Raw_reads/${sampleID}", mode: 'copy'
+	publishDir "./Results/${out_dir}/${sampleID}/Fastp_QC_Raw_reads", mode: 'copy'
 	tag "${sampleID}"
 	
 	input:
@@ -241,6 +245,7 @@ process spades_no_trim{
 	tuple sampleID, file(reads) from raw_data_for_spades
 	val settings from no_trim_settings
 	val script_folder from script_spades_no_trim
+	val filter_settings from no_trim_spades_filter_setting
 	
 	output:
 	tuple sampleID, file("${sampleID}*") into spades_output
@@ -254,15 +259,16 @@ process spades_no_trim{
 	
 		"""
 		spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
-		mv scaffolds.fasta ./${sampleID}_spades_scaffolds.fasta
+		mv scaffolds.fasta ./${sampleID}_spades_${settings}_scaffolds.fasta
 		"""
 	else
 	
 		"""
+		echo ${filter_settings}
 		spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
-		mv scaffolds.fasta ./${sampleID}_spades_scaffolds.fasta
-		python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_spades_scaffolds 300
-		rm ${sampleID}_spades_scaffolds.fasta
+		mv scaffolds.fasta ./${sampleID}_spades_${settings}_scaffolds.fasta
+		python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_spades_${settings}_scaffolds ${filter_settings}
+		rm ${sampleID}_spades_${settings}_scaffolds.fasta
 		"""
 
 }
@@ -278,7 +284,8 @@ process spades_after_fastp{
 	tuple sampleID, file(reads) from fastp_output_SPAdes
 	val script_folder from script_spades_fastp
 	val settings from trim_fastp_setting
-
+	val filter_settings from fastp_spades_filter_setting
+	
 	output:
 	tuple sampleID, file("${sampleID}*") into spades_output_fastp
 	file "*" into spades_all_fastp
@@ -292,16 +299,16 @@ process spades_after_fastp{
 	
 		"""
 		spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
-		mv scaffolds.fasta ./${sampleID}_spades_scaffolds.fasta
+		mv scaffolds.fasta ./${sampleID}_spades_${settings}_scaffolds.fasta
 		"""
 	else
 	
 		"""
 		spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
-		mv scaffolds.fasta ./${sampleID}_spades_scaffolds.fasta
-		python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_spades_scaffolds 300
-		rm ${sampleID}_spades_scaffolds.fasta
-	"""
+		mv scaffolds.fasta ./${sampleID}_spades_${settings}_scaffolds.fasta
+		python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_spades_${settings}_scaffolds ${filter_settings}
+		rm ${sampleID}_spades_${settings}_scaffolds.fasta
+		"""
 
 }
 
@@ -314,7 +321,8 @@ process spades_after_trimmomatic{
 	tuple sampleID, file(reads) from trimmomatic_output_for_SPAdes
 	val script_folder from script_spades_trimmomatic
 	val settings from trim_trimmomatic_setting
-
+	val filter_settings from trimmomatic_spades_filter_setting
+	
 	output:
 	tuple sampleID, file("${sampleID}*") into spades_output_trimmomatic
 	file "*" into spades_all_trimmomatic
@@ -327,16 +335,16 @@ process spades_after_trimmomatic{
 	
 		"""
 		spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
-		mv scaffolds.fasta ./${sampleID}_spades_scaffolds.fasta
+		mv scaffolds.fasta ./${sampleID}_spades_${settings}_scaffolds.fasta
 		"""
 	else
 	
 		"""
 		spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
-		mv scaffolds.fasta ./${sampleID}_spades_scaffolds.fasta
-		python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_spades_scaffolds 300
-		rm ${sampleID}_spades_scaffolds.fasta
-	"""
+		mv scaffolds.fasta ./${sampleID}_spades_${settings}_scaffolds.fasta
+		python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_spades_${settings}_scaffolds ${filter_settings}
+		rm ${sampleID}_spades_${settings}_scaffolds.fasta
+		"""
 
 
 }
@@ -355,7 +363,8 @@ process skesa_no_trim{
 	tuple sampleID, file(reads) from raw_data_for_skesa
 	val settings from no_trim_settings
 	val script_folder from script_skesa_no_trim
-	
+	val filter_settings from no_trim_skesa_filter_setting
+		
 	output:
 	tuple sampleID, file("${sampleID}*") into skesa_output_no_trim
 	
@@ -373,7 +382,7 @@ process skesa_no_trim{
 	else
 		"""
 		skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_skesa_contigs.fasta
-		python3 ${script_folder}/remove_contaminants.py ${sampleID}_skesa_contigs 300
+		python3 ${script_folder}/remove_contaminants.py ${sampleID}_skesa_contigs ${filter_settings}
 		rm ${sampleID}_skesa_contigs.fasta
 		"""
 
@@ -387,7 +396,8 @@ process skesa_after_fastp{
 	input:
 	tuple sampleID, file(reads) from fastp_output_skesa
 	val script_folder from script_skesa_fastp
-	
+	val filter_settings from fastp_skesa_filter_setting
+		
 	output:
 	tuple sampleID, file("${sampleID}*") into skesa_output_fastp
 	
@@ -405,7 +415,7 @@ process skesa_after_fastp{
 	else
 		"""
 		skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_skesa_contigs.fasta
-		python3 ${script_folder}/remove_contaminants.py ${sampleID}_skesa_contigs 300
+		python3 ${script_folder}/remove_contaminants.py ${sampleID}_skesa_contigs ${filter_settings}
 		rm ${sampleID}_skesa_contigs.fasta
 		"""
 }
@@ -419,7 +429,8 @@ process skesa_after_trimmomatic{
 	input:
 	tuple sampleID, file(reads) from trimmomatic_output_for_skesa
 	val script_folder from script_skesa_trimmomatic
-	
+	val filter_settings from trimmomatic_skesa_filter_setting
+		
 	output:
 	tuple sampleID, file("${sampleID}*") into skesa_output_trimmomatic
 	
@@ -437,7 +448,7 @@ process skesa_after_trimmomatic{
 	else
 		"""
 		skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_skesa_contigs.fasta
-		python3 ${script_folder}/remove_contaminants.py ${sampleID}_skesa_contigs 300
+		python3 ${script_folder}/remove_contaminants.py ${sampleID}_skesa_contigs ${filter_settings}
 		rm ${sampleID}_skesa_contigs.fasta
 		"""
 }

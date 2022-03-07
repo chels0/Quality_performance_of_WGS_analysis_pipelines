@@ -42,7 +42,9 @@ for i in range(len(contigs)):
 
 del lista[empty[0]:]
 
-with open(fasta_name+'_filtered.fasta', 'w') as file2:
+filtr = str(contig_size_to_remove)
+
+with open(fasta_name+'_filtered'+filtr+'.fasta', 'w') as file2:
     for line in lista:
         file2.write("%s" % line)
                

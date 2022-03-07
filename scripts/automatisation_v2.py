@@ -52,21 +52,36 @@ for i in range(len(no_trim_settings)):
     
 for element in no_trim_settings:
     count = count + 1
-    with open('config_files/Run'+ str(count), 'w') as file2:
-        for line in element:
-            file2.write("%s" % line)
+    if count > 9:
+    	with open('config_files/Run'+ str(count), 'w') as file2:
+        	for line in element:
+            		file2.write("%s" % line)
+    else:
+    	with open('config_files/Run'+'0'+str(count), 'w') as file2:
+        	for line in element:
+            		file2.write("%s" % line)
     
 for element in fastp_settings:
     count = count + 1
-    with open('config_files/Run'+ str(count), 'w') as file2:
-        for line in element:
-            file2.write("%s" % line)
+    if count > 9:
+    	with open('config_files/Run'+ str(count), 'w') as file2:
+        	for line in element:
+            		file2.write("%s" % line)
+    else:
+    	with open('config_files/Run'+'0'+str(count), 'w') as file2:
+        	for line in element:
+            		file2.write("%s" % line)
 
 for element in trimmomatic_settings:                
     count = count + 1
-    with open('config_files/Run'+ str(count), 'w') as file2:
-        for line in element:
-            file2.write("%s" % line)
+    if count > 9:
+    	with open('config_files/Run'+ str(count), 'w') as file2:
+        	for line in element:
+            		file2.write("%s" % line)
+    else:
+    	with open('config_files/Run'+'0'+str(count), 'w') as file2:
+        	for line in element:
+            		file2.write("%s" % line)
     
 
 

@@ -10,4 +10,18 @@ cat Raw_data/Campylobacter_jejuni/Schema/Cjejuni_cgMLST_678_listGenes.txt | sed 
 
 #Allele call
 
-chewBBACA.py AlleleCall -i Results/all_assemblies/ -g Results/chewbbaca/Jejuni/fullpath_cgMLSTschema.txt --cpu 4 -o Results/chewbbaca/Jejuni/results_cgMLST
+ls Results/ > directory_list.txt
+
+for dir in $(cat directory_list.txt)
+do
+	ls Results/${dir}/PT* > Results/${dir}/samples_list.txt
+	sed -i '/Fast/d' samples_list.txt #remove fast things
+	mkdir Results/${dir}/ChewBBACA
+	
+	for dir2 in $(cat samples_list.txt)
+	do	
+		chewBBACA.py AlleleCall -i Results/${dir}/Assemblies/ -g fullpath_cgMLSTschema.txt --cpu 8 -o Results/${dir}/ChewBBACA
+	done	
+done
+
+

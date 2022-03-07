@@ -10,6 +10,7 @@ import sys
 fasta_name = sys.argv[1]
 contig_size_to_remove = int(sys.argv[2])
 
+
 with open(fasta_name+'.fasta', "r") as f:
     seq = f.readlines()
 
@@ -28,7 +29,9 @@ for i in range(len(every_other)):
     
 no_int = [x for x in to_change if not isinstance(x,int)]
 
-with open(fasta_name+'_filtered.fasta', 'w') as file2:
+filtr = str(contig_size_to_remove)
+
+with open(fasta_name+'_filtered'+filtr+'.fasta', 'w') as file2:
     for line in no_int:
         file2.write("%s" % line)
             
