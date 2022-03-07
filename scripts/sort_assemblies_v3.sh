@@ -2,31 +2,34 @@
 
 #script for sorting assemblies into chewbbaca for every combination
 
-ls Results/ > directory_list.txt
+outdir=$1
+
+ls $outdir > directory_list.txt
 
 for dir in $(cat directory_list.txt)
 do
-	rm -r Results/${dir}/Assemblies
-	ls Results/${dir} > Results/${dir}/samples_list.txt
-	sed -i '/Fast/d' Results/${dir}/samples_list.txt #remove fast things
-	sed -i '/samples_list.txt/d' Results/${dir}/samples_list.txt
-	mkdir Results/${dir}/Assemblies
+	rm -r $outdir/${dir}/Assemblies
+	ls $outdir/${dir} > $outdir/${dir}/samples_list.txt
+	sed -i '/Fast/d' $outdir/${dir}/samples_list.txt #remove fast things
+	sed -i '/samples_list.txt/d' $outdir/${dir}/samples_list.txt
+	mkdir $outdir/${dir}/Assemblies
 	
-	for dir2 in $(cat Results/${dir}/samples_list.txt)
+	for dir2 in $(cat $outdir/${dir}/samples_list.txt)
 	do
-		ls Results/${dir}/${dir2} > Results/${dir}/${dir2}/results_list.txt
-		sed -i '/results_list.txt/d' Results/${dir}/${dir2}/results_list.txt
-		if grep -Fxq "Pilon" Results/${dir}/${dir2}/results_list.txt
+		ls $outdir/${dir}/${dir2} > $outdir/${dir}/${dir2}/results_list.txt
+		sed -i '/results_list.txt/d' $outdir/${dir}/${dir2}/results_list.txt
+		if grep -Fxq "Pilon" $outdir/${dir}/${dir2}/results_list.txt
 		then
-			cp Results/${dir}/${dir2}/Pilon/SPAdes/* Results/${dir}/Assemblies/.
-			cp Results/${dir}/${dir2}/Pilon/SKESA/* Results/${dir}/Assemblies/.
+			cp $outdir/${dir}/${dir2}/Pilon/SPAdes/* $outdir/${dir}/Assemblies/.
+			cp $outdir/${dir}/${dir2}/Pilon/SKESA/* $outdir/${dir}/Assemblies/.
 		else
-			cp Results/${dir}/${dir2}/SPAdes/${dir2}* Results/${dir}/Assemblies/.
-			cp Results/${dir}/${dir2}/SKESA/* Results/${dir}/Assemblies/.
+			cp $outdir/${dir}/${dir2}/SPAdes/${dir2}* $outdir/${dir}/Assemblies/.
+			cp $outdir/${dir}/${dir2}/SKESA/* $outdir/${dir}/Assemblies/.
 		fi
 		
 	done
-	rm Results/${dir}/samples_list.txt	
+	rm $outdir/${dir}/samples_list.txt	
 done
 
 rm directory_list.txt
+
