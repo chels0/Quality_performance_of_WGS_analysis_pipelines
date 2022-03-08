@@ -2,54 +2,82 @@
 
 #för att kunna skriva config till det man vill
 
-outdir=/data/Results_all
-
-python3 scripts/automatisation_v2.py
-
-pwd > path1.txt
-sed 's./.\\/.g' path1.txt > path.txt
-
-path=$(cat path.txt) 
-
-sed "s/PATHS/$path/g" parameter_settings.txt > parameter_path.txt
-
-> log.txt
-
-source ../../miniconda3/bin/activate env_version1 
-
-for file in config_files/*;
+#Define output directory. If no output directory is chosen the final results will be in the pipeline Results folder. 
+while getopts o: flag #define flag
 do
-	head -15 parameter_path.txt > nextflow.config
-	cat $file >> nextflow.config
-	grep fastqc_set parameter_path.txt -A 10 >> nextflow.config
-	
-	date
-	echo "Starting pipeline with the following paramaters"
-	echo $file
-	echo | cat $file
-	
-	date >> log.txt
-	echo "Starting pipeline with the following paramaters" >> log.txt 
-	echo $file >> log.txt
-	echo | cat $file >> log.txt
-		
-	nextflow pipeline6.nf -profile conda -resume
-	#multiqc Results/. -o Results/MultiQC
-
-	mv Results/* $outdir/.
-	
-	rm -r work
-	>nextflow.config 
+    case "${flag}" in
+        o) outdir=${OPTARG};;
+    esac
 done
 
-bash scripts/sort_assemblies_v3.sh $outdir
+if [ -z "${outdir}" ]; #if flag is empty, use Results folder.
+then
+        outdir=Results/
+fi
 
-#ls Results > directory_list.txt
-path2=$(pwd)
+if [ ! -d "${outdir}" ] #if the directory does not exist kill the pipeline
+then
+    echo "Directory: ${outdir} DOES NOT exist. Exiting" 
+    exit 9999 # die with error code 9999
+fi
+
+#Generate config files to be used in config_files folder
+python3 scripts/automatisation_v2.py
+
+#Add current path to txt file and add backslashes so it can be used with sed to automatically change path of the parameter_settings.txt file 
+pwd > path1.txt
+sed 's./.\\/.g' path1.txt > path.txt #adding backslashes
+path=$(cat path.txt) 
+sed "s/PATHS/$path/g" parameter_settings.txt > parameter_path.txt #exchange PATHS in parameter settings to the actual working path of the pipeline
+
+> log.txt #create empty log
+
+source ../../miniconda3/bin/activate env_version1 #activate conda environment
+
+#Iterate over each config file generatated and run the pipeline with those settings specified in the config file
+for file in config_files/*;
+do
+	head -15 parameter_path.txt > nextflow.config #Keep first 15 rows of parameter file which contains paremeters not to be changed and append to nextflow.config
+	cat $file >> nextflow.config #append parameters in parameter file which will be changed with each iteration
+	grep fastqc_set parameter_path.txt -A 10 >> nextflow.config #grep the last set of parameters not to be changed by the system and append to config file
+	
+	date #print todays date
+	echo "Starting pipeline with the following parameters"
+	echo $file #print which run file is being processed
+	cat $file #print which parameters are being used in pipeline this iteration
+	
+	#save the above prints to log file
+	date >> log.txt
+	echo "Starting pipeline with the following parameters" >> log.txt 
+	echo $file >> log.txt
+	cat $file >> log.txt
+	
+	#Run pipeline	
+	nextflow pipeline6.nf -profile conda -resume
+	
+	#If outdir is not the Results folder in the pipeline directory, move the results to the wanted outdirectory
+	if [ "${outdir}" != Results/ ];
+	then
+        	mv Results/* $outdir/.
+	fi
+
+	rm -r work #remove nextflow work directory
+	>nextflow.config #empty the config file
+done
+
+bash scripts/sort_assemblies_v3.sh $outdir #sort the assemblies into correct folders for chewbbaca
+
+path2=$(pwd) #define path
+#put the path to the cgMLST genes into file
 cat Raw_data/Campylobacter_jejuni/Schema/Cjejuni_cgMLST_678_listGenes.txt | sed -e "s|^|${path2}/Raw_data/Campylobacter_jejuni/Schema/Cjejuni_wgMLST_2795_schema/schema_seed_campy_roary_V5/|g" > fullpath_cgMLSTschema.txt
+
+#run chewbbaca on each iteration and multiqc on quast reports
 for dir in $outdir/*
 do
 	chewBBACA.py AlleleCall -i ${dir}/Assemblies/ -g fullpath_cgMLSTschema.txt --cpu 8 -o ${dir}/chewBBACA/cgMLST_results_jejuni
+	multiqc ${dir}/PT*/Quast -o ${dir}/MultiQC
+	cp ${dir}/Multiqc/multiqc_data/multiqc_quast.txt ${dir}/Multiqc/multiqc_quast.tsv
+
 done        
 
 

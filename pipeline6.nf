@@ -673,9 +673,9 @@ process quast_no_trimming{
 	"""
 	mkdir Reports
 	quast.py ${assembly[0]} -o SPAdes -r $reference
-	mv SPAdes/report.tsv Reports/${sampleID}_SPAdes_${out_dir}.tsv
+	cp SPAdes/report.tsv Reports/${sampleID}_SPAdes_${out_dir}.tsv
 	quast.py ${assembly_skesa[0]} -o SKESA -r $reference
-	mv SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
+	cp SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
 	"""
 }
 
@@ -697,9 +697,9 @@ process quast_after_fastp{
 	"""
 	mkdir Reports
 	quast.py ${assembly[0]} -o SPAdes -r $reference
-	mv SPAdes/report.tsv Reports/${sampleID}_SPAdes_${out_dir}.tsv
+	cp SPAdes/report.tsv Reports/${sampleID}_SPAdes_${out_dir}.tsv
 	quast.py ${assembly_skesa[0]} -o SKESA -r $reference
-	mv SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
+	cp SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
 	"""
 }
 
@@ -721,9 +721,9 @@ process quast_after_trimmomatic{
 	"""
 	mkdir Reports
 	quast.py ${assembly[0]} -o SPAdes -r $reference
-	mv SPAdes/report.tsv Reports/${sampleID}_SPAdes_${out_dir}.tsv
+	cp SPAdes/report.tsv Reports/${sampleID}_SPAdes_${out_dir}.tsv
 	quast.py ${assembly_skesa[0]} -o SKESA -r $reference
-	mv SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
+	cp SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
 	"""
 }
 
@@ -746,9 +746,9 @@ process quast_no_trimming_improved{
 	"""
 	mkdir Reports
 	quast.py ${assembly[0]} -o SPAdes -r $reference
-	mv SPAdes/report.tsv Reports/${sampleID}_SPAdes_${out_dir}.tsv
+	cp SPAdes/report.tsv Reports/${sampleID}_SPAdes_${out_dir}.tsv
 	quast.py ${assembly_skesa[0]} -o SKESA -r $reference
-	mv SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
+	cp SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
 	"""
 }
 
@@ -771,9 +771,9 @@ process quast_after_fastp_improved{
 	"""
 	mkdir Reports
 	quast.py ${assembly[0]} -o SPAdes -r $reference
-	mv SPAdes/report.tsv Reports/${sampleID}_SPAdes_${out_dir}.tsv
+	cp SPAdes/report.tsv Reports/${sampleID}_SPAdes_${out_dir}.tsv
 	quast.py ${assembly_skesa[0]} -o SKESA -r $reference
-	mv SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
+	cp SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
 	"""
 }
 
@@ -796,9 +796,9 @@ process quast_after_trimmomatic_improved{
 	"""
 	mkdir Reports
 	quast.py ${assembly[0]} -o SPAdes -r $reference
-	mv SPAdes/report.tsv Reports/${sampleID}_SPAdes_${out_dir}.tsv
+	cp SPAdes/report.tsv Reports/${sampleID}_SPAdes_${out_dir}.tsv
 	quast.py ${assembly_skesa[0]} -o SKESA -r $reference
-	mv SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
+	cp SKESA/report.tsv Reports/${sampleID}_SKESA_${out_dir}.tsv
 	"""
 
 }
