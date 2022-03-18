@@ -20,7 +20,7 @@ columns = ['# contigs', 'Largest contig', 'Total length', 'Reference length',
 
 for direct in os.listdir(directory):
     filename_chew = direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
-
+    
     #filename_chew = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/alleles/results_alleles1.tsv'
     
     #filename_chew = sys.argv[1] #filename for chewbbaca result
