@@ -51,7 +51,6 @@ process fastqc_raw {
 	file "*" into fastqc_raw_output
 	
 	"""
-	fastqc
 	fastqc ${reads[0]} ${reads[1]} --outdir . 
 	"""
 }

@@ -22,7 +22,7 @@ then
 fi
 
 #Generate config files to be used in config_files folder
-#python3 scripts/automatisation_v2.py
+python3 scripts/automatisation_v2.py
 
 #Add current path to txt file and add backslashes so it can be used with sed to automatically change path of the parameter_settings.txt file 
 pwd > path1.txt
