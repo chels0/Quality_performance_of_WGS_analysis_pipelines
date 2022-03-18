@@ -12,7 +12,7 @@ done
 
 if [ -z "${outdir}" ]; #if flag is empty, use Results folder.
 then
-        outdir=Results/
+        outdir=Results
 fi
 
 if [ ! -d "${outdir}" ] #if the directory does not exist kill the pipeline
@@ -41,6 +41,8 @@ do
 	cat $file >> nextflow.config #append parameters in parameter file which will be changed with each iteration
 	grep fastqc_set parameter_path.txt -A 10 >> nextflow.config #grep the last set of parameters not to be changed by the system and append to config file
 	
+	cp nextflow.config ./nextflow_config_copy
+
 	date #print todays date
 	echo "Starting pipeline with the following parameters"
 	echo $file #print which run file is being processed
@@ -53,10 +55,10 @@ do
 	cat $file >> log.txt
 	
 	#Run pipeline	
-	nextflow pipeline6.nf -profile conda -resume
+	nextflow pipeline7.nf -profile conda -resume
 	
 	#If outdir is not the Results folder in the pipeline directory, move the results to the wanted outdirectory
-	if [ "${outdir}" != Results/ ];
+	if [ "${outdir}" != Results ];
 	then
         	mv Results/* $outdir/.
 	fi

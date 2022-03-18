@@ -20,11 +20,11 @@ do
 		sed -i '/results_list.txt/d' $outdir/${dir}/${dir2}/results_list.txt
 		if grep -Fxq "Pilon" $outdir/${dir}/${dir2}/results_list.txt
 		then
-			cp $outdir/${dir}/${dir2}/Pilon/SPAdes/* $outdir/${dir}/Assemblies/.
-			cp $outdir/${dir}/${dir2}/Pilon/SKESA/* $outdir/${dir}/Assemblies/.
+			cp $outdir/${dir}/${dir2}/Pilon/spades/* $outdir/${dir}/Assemblies/.
+			cp $outdir/${dir}/${dir2}/Pilon/skesa/* $outdir/${dir}/Assemblies/.
 		else
-			cp $outdir/${dir}/${dir2}/SPAdes/${dir2}* $outdir/${dir}/Assemblies/.
-			cp $outdir/${dir}/${dir2}/SKESA/* $outdir/${dir}/Assemblies/.
+			cp $outdir/${dir}/${dir2}/spades/${dir2}* $outdir/${dir}/Assemblies/.
+			cp $outdir/${dir}/${dir2}/skesa/* $outdir/${dir}/Assemblies/.
 		fi
 		
 	done

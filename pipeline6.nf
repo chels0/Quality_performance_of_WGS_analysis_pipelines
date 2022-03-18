@@ -199,7 +199,7 @@ process spades_no_trim{
 	file "*" into spades_all
 	
 	when:
-	params.assembler == spades && params.no_trim == true
+	params.assembler == 'spades' && params.no_trim == true
 	
 	script:
 	if ( params.filter_contigs == false )
@@ -239,7 +239,7 @@ process spades_after_fastp{
 
  	
  	when:
-	params.assembler == spades && params.fastp_trim_qc == true
+	params.assembler == 'spades' && params.fastp_trim_qc == true
 	
 	script:
 	if ( params.filter_contigs == false )
@@ -275,7 +275,7 @@ process spades_after_trimmomatic{
 	file "*" into spades_all_trimmomatic
 
  	when:
-	params.assembler == spades && params.trimmomatic == true
+	params.assembler == 'spades' && params.trimmomatic == true
 	
 	script:
 	if ( params.filter_contigs == false )
@@ -316,7 +316,7 @@ process skesa_no_trim{
 	tuple sampleID, file("${sampleID}*") into skesa_output_no_trim
 	
 	when:
-	params.assembler == skesa && params.no_trim == true
+	params.assembler == 'skesa' && params.no_trim == true
 	
 	script:
 	
@@ -349,7 +349,7 @@ process skesa_after_fastp{
 	tuple sampleID, file("${sampleID}*") into skesa_output_fastp
 	
 	when:
-	params.assembler == skesa && params.fastp_trim_qc == true
+	params.assembler == 'skesa' && params.fastp_trim_qc == true
 	
 	script:
 	
@@ -382,7 +382,7 @@ process skesa_after_trimmomatic{
 	tuple sampleID, file("${sampleID}*") into skesa_output_trimmomatic
 	
 	when:
-	params.assembler == skesa && params.trimmomatic == true
+	params.assembler == 'skesa' && params.trimmomatic == true
 	
 	script:
 	
@@ -425,7 +425,7 @@ process pilon_post_spades_no_trim {
 	tuple sampleID, file("${sampleID}*") into pilon_output_spades_no_trim
 	
 	when:
-	params.assembler == spades && params.assembly_improvement==true && params.no_trim==true
+	params.assembler == 'spades' && params.assembly_improvement==true && params.no_trim==true
 	
 	script:
 	index_base = scaffold[0].toString() - ~/.fasta/
@@ -456,7 +456,7 @@ process pilon_post_spades_fastp {
 	tuple sampleID, file("${sampleID}*") into pilon_output_spades_fastp
 	
 	when:
-	params.assembler == spades && params.assembly_improvement==true && params.fastp_trim_qc==true
+	params.assembler == 'spades' && params.assembly_improvement==true && params.fastp_trim_qc==true
 	
 	script:
 	index_base = scaffold[0].toString() - ~/.fasta/
@@ -487,7 +487,7 @@ process pilon_post_spades_trimmomatic {
 	tuple sampleID, file("${sampleID}*") into pilon_output_spades_trimmomatic
 	
 	when:
-	params.assembler == spades && params.assembly_improvement==true && params.trimmomatic==true
+	params.assembler == 'spades' && params.assembly_improvement==true && params.trimmomatic==true
 	
 	script:
 	index_base = scaffold[0].toString() - ~/.fasta/
@@ -518,7 +518,7 @@ process pilon_post_skesa_no_trim {
 	tuple sampleID, file("${sampleID}*") into pilon_output_skesa_no_trim
 	
 	when:
-	(params.assembler == skesa && params.assembly_improvement==true && params.no_trim==true)
+	(params.assembler == 'skesa' && params.assembly_improvement==true && params.no_trim==true)
 	
 	script:
 	index_base = scaffold[0].toString() - ~/.fasta/
@@ -549,7 +549,7 @@ process pilon_post_skesa_fastp {
 	tuple sampleID, file("${sampleID}*") into pilon_output_skesa_fastp
 	
 	when:
-	params.assembler == skesa && params.assembly_improvement==true && params.fastp_trim_qc==true
+	params.assembler == 'skesa' && params.assembly_improvement==true && params.fastp_trim_qc==true
 	
 	script:
 	index_base = scaffold[0].toString() - ~/.fasta/
@@ -580,7 +580,7 @@ process pilon_post_skesa_trimmomatic {
 	tuple sampleID, file("${sampleID}*") into pilon_output_skesa_trimmomatic
 	
 	when:
-	params.assembler == skesa && params.assembly_improvement==true && params.trimmomatic==true
+	params.assembler == 'skesa' && params.assembly_improvement==true && params.trimmomatic==true
 	
 	script:
 	index_base = scaffold[0].toString() - ~/.fasta/
