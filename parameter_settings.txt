@@ -13,10 +13,11 @@ params{
 	path_to_reads = './Raw_data/test_set/*{R1,R2}.fastq.gz'
 	path_to_reference = 'PATHS/Raw_data/jejuni*'
 	path_to_scripts = 'PATHS/scripts'
+	path_to_illumina_adapters = '/home/chelsea/miniconda3/envs/env_version1/share/trimmomatic/adapters'
 	
 	fastqc_set = ''
 	fastp_set = ''
-	trimmomatic_set = 'SLIDINGWINDOW:4:15 MINLEN:36'
+	trimmomatic_set = 'ILLUMINACLIP:$path_to_illumina_adapters:2:30:10:2:true LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36'
 	spades_set = '--only-assembler'
 	skesa_set = ''
 	filter_set = '300'

@@ -37,7 +37,7 @@ source ../../miniconda3/bin/activate env_version1 #activate conda environment
 #Iterate over each config file generatated and run the pipeline with those settings specified in the config file
 for file in config_files/*;
 do
-	head -15 parameter_path.txt > nextflow.config #Keep first 15 rows of parameter file which contains paremeters not to be changed and append to nextflow.config
+	head -16 parameter_path.txt > nextflow.config #Keep first 15 rows of parameter file which contains paremeters not to be changed and append to nextflow.config
 	cat $file >> nextflow.config #append parameters in parameter file which will be changed with each iteration
 	grep fastqc_set parameter_path.txt -A 10 >> nextflow.config #grep the last set of parameters not to be changed by the system and append to config file
 	
