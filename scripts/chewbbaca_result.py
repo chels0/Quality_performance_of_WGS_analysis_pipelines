@@ -19,8 +19,13 @@ columns = ['# contigs', 'Largest contig', 'Total length', 'Reference length',
                '# mismatches per 100 kbp']
 
 for direct in os.listdir(directory):
+<<<<<<< HEAD
     filename_chew = directory + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
     print(filename_chew)
+=======
+    filename_chew = direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
+    
+>>>>>>> 8ae1706d66402045ffefc2bf914852e5334a61b4
     #filename_chew = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/alleles/results_alleles1.tsv'
     
     #filename_chew = sys.argv[1] #filename for chewbbaca result

@@ -13,18 +13,20 @@ improv = ['\tassembly_improvement']
 no_trim = ['\tno_trim']
 fastp_trim_qc = ['\tfastp_trim_qc']
 trimmomatic = ['\ttrimmomatic']
+assembler = ['\tassembler']
+assembly_programs = [' = skesa\n', '= spades\n']
 bools = [' = false\n', ' = true\n']
 trues = [' = true\n']
 falses = [' = false\n']
 
 # Create all combinations of parameters when no trimming is chosen
-no_trim_set = list(itertools.product(no_trim, trues, filtering, bools, improv, bools))
+no_trim_set = list(itertools.product(no_trim, trues, filtering, bools, improv, bools, assembler, assembly_programs))
 
 #Create all combinations of parameters when fastp trimming is chosen
-fastp_trim_set = list(itertools.product(fastp_trim_qc, trues, filtering, bools, improv, bools))
+fastp_trim_set = list(itertools.product(fastp_trim_qc, trues, filtering, bools, improv, bools, assembler, assembly_programs ))
 
 #Create all combinations of parameters when trimmomatic is chosen
-trimmomatic_set = list(itertools.product(trimmomatic, trues, filtering, bools, improv, bools))
+trimmomatic_set = list(itertools.product(trimmomatic, trues, filtering, bools, improv, bools, assembler, assembly_programs))
 
 #Define empty lists to put results in
 no_trim_settings = []
