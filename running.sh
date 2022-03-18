@@ -17,12 +17,12 @@ fi
 
 if [ ! -d "${outdir}" ] #if the directory does not exist kill the pipeline
 then
-    echo "Directory: ${outdir} DOES NOT exist. Exiting" 
+    echo "Directory: ${outdir} DOES NOT exist. Exiting. Please create directory" 
     exit 9999 # die with error code 9999
 fi
 
 #Generate config files to be used in config_files folder
-python3 scripts/automatisation_v2.py
+#python3 scripts/automatisation_v2.py
 
 #Add current path to txt file and add backslashes so it can be used with sed to automatically change path of the parameter_settings.txt file 
 pwd > path1.txt
@@ -75,11 +75,18 @@ cat Raw_data/Campylobacter_jejuni/Schema/Cjejuni_cgMLST_678_listGenes.txt | sed 
 for dir in $outdir/*
 do
 	chewBBACA.py AlleleCall -i ${dir}/Assemblies/ -g fullpath_cgMLSTschema.txt --cpu 8 -o ${dir}/chewBBACA/cgMLST_results_jejuni
+	mv ${dir}/chewBBACA/cgMLST_results_jejuni/results*/* ${dir}/chewBBACA/cgMLST_results_jejuni/.
 	multiqc ${dir}/PT*/Quast -o ${dir}/MultiQC
 	cp ${dir}/Multiqc/multiqc_data/multiqc_quast.txt ${dir}/Multiqc/multiqc_quast.tsv
-
 done        
 
+mkdir Results/chewbbaca_quast_tables
+mkdir Results/Comparisons
+python3 scripts/chewbbaca_result.py ${outdir} 
+python3 scripts/reduce_chewbbaca.py 
+
+mv chewbbaca_quast_tables ${outdir}/.
+mv Comparisons ${outdir}/.
 
 rm path1.txt
 rm path.txt

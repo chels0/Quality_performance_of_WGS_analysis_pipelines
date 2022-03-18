@@ -97,8 +97,7 @@ for files in combos:
     merged = merged.fillna('')
     
     #save to csv
-    final_directory = sys.argv[2]
-    merged.to_csv(final_directory + '/'+ filename3[0]+'_vs_'+filename4[0]+'_results.tsv', sep='\t', encoding='utf-8')
+    merged.to_csv('Results/Comparisons/'+ filename3[0]+'_vs_'+filename4[0]+'_results.tsv', sep='\t', encoding='utf-8')
 
 # #test3 = pd.concat([df_quast, df2_quast], keys=[filename, filename2], axis=1, sort=False)
 

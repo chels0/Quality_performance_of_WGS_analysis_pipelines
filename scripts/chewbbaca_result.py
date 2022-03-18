@@ -19,8 +19,8 @@ columns = ['# contigs', 'Largest contig', 'Total length', 'Reference length',
                '# mismatches per 100 kbp']
 
 for direct in os.listdir(directory):
-    filename_chew = direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
-
+    filename_chew = directory + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
+    print(filename_chew)
     #filename_chew = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/alleles/results_alleles1.tsv'
     
     #filename_chew = sys.argv[1] #filename for chewbbaca result
@@ -87,11 +87,12 @@ for direct in os.listdir(directory):
     to_compare = to_compare[~to_compare.index.duplicated(keep='last')] #remove duplicate reference row
     
     #QUAST
-    filename_quast = direct + 'multiqc_quast.tsv'
+    filename_quast = directory + direct + '/multiqc/multiqc_quast.tsv'
+    print(filename_quast)
     #filename_quast = sys.argv[2] #filename for quast result
     df2 = pd.read_csv(filename_quast, sep='\t', index_col=0) #create tab separated dataframe
     df4 = df2[columns] #keep only relevant columns
-    df3 = pd.concat([reference, df4]) #add empty reference row to dataframe
+    df3 = pd.concat([reference, df4], sort=False) #add empty reference row to dataframe
     df3 = df3.reset_index() #remove sample names as index
     df3.index = df.index #set index of quast dataframe as the index of chewbbaca dataframe
     df3 = df3.drop('Sample', axis=1) #remove sample column which is not index
@@ -108,10 +109,9 @@ for direct in os.listdir(directory):
     
     #if len(name_of_run) == 1:
     #    name_of_run = name_of_run[0].split('_scaffolds')
+   
     
-    save_directory = sys.argv[2]
-    
-    kuk.to_csv(save_directory+'/'+ name[1]+'_results.tsv', sep='\t', encoding='utf-8') #save to csv with name of run
+    kuk.to_csv('Results/chewbbaca_quast_tables/'+ name[1]+'_results.tsv', sep='\t', encoding='utf-8') #save to csv with name of run
 
 
 # for index, row in df.iterrows():
