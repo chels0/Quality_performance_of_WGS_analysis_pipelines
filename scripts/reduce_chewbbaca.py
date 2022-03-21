@@ -11,6 +11,7 @@ import numpy as np
 import sys
 import os
 import itertools
+import pathlib
 
 #name of directory
 directory = sys.argv[1]
@@ -18,7 +19,7 @@ directory = sys.argv[1]
 list_of_files = []
 
 #append filenames into list_of_files
-for filename in os.listdir(directory):
+for filename in os.listdir(directory+'/chewbbaca_quast_tables/'):
     list_of_files.append(filename.split('.')[0]) #split on . to separate filename from file extension
 
 combos = [] #list of combinations of filenames
@@ -33,14 +34,15 @@ columns = ['Sample','# contigs', 'Largest contig', 'Total length', 'Reference le
                'Genome fraction (%)', 'GC (%)', 'Reference GC (%)', 'N50', 'NG50', '# misassemblies',
                '# mismatches per 100 kbp']
 
+
 #Do pairwise comparison of two dataframes based on filename combinations        
 for files in combos:
     filename1 = files[0] #name of first combination of files
     filename2 = files[1] # name of second combination of files
-    
+ 
     #create dataframes
-    df = pd.read_csv(directory+filename1+'.tsv', sep='\t')
-    df2 = pd.read_csv(directory+filename2+'.tsv', sep= '\t')
+    df = pd.read_csv(directory+'/chewbbaca_quast_tables/'+filename1+'.tsv', sep='\t')
+    df2 = pd.read_csv(directory+'/chewbbaca_quast_tables/'+filename2+'.tsv', sep= '\t')
     
     indices = []
     indices2 = []
@@ -95,8 +97,10 @@ for files in combos:
     #merge quast and chewbbaca results
     merged = pd.merge(test3,test2,left_index= True, right_index=True, how="outer")
     merged = merged.fillna('')
+    merged.sort_index(inplace=True, ascending=False)
     
     #save to csv
+    pathlib.Path('Results/Comparisons').mkdir(parents=True, exist_ok=True)
     merged.to_csv('Results/Comparisons/'+ filename3[0]+'_vs_'+filename4[0]+'_results.tsv', sep='\t', encoding='utf-8')
 
 # #test3 = pd.concat([df_quast, df2_quast], keys=[filename, filename2], axis=1, sort=False)
