@@ -22,7 +22,7 @@ then
 fi
 
 #Generate config files to be used in config_files folder
-python3 scripts/automatisation_v2.py
+#python3 scripts/automatisation_v2.py
 
 #Add current path to txt file and add backslashes so it can be used with sed to automatically change path of the parameter_settings.txt file 
 pwd > path1.txt
@@ -79,7 +79,7 @@ do
 	chewBBACA.py AlleleCall -i ${dir}/Assemblies/ -g fullpath_cgMLSTschema.txt --cpu 8 -o ${dir}/chewBBACA/cgMLST_results_jejuni
 	mv ${dir}/chewBBACA/cgMLST_results_jejuni/results*/* ${dir}/chewBBACA/cgMLST_results_jejuni/.
 	multiqc ${dir}/PT*/Quast -o ${dir}/MultiQC
-	cp ${dir}/Multiqc/multiqc_data/multiqc_quast.txt ${dir}/Multiqc/multiqc_quast.tsv
+	cp ${dir}/MultiQC/multiqc_data/multiqc_quast.txt ${dir}/MultiQC/multiqc_quast.tsv
 done        
 
 mkdir Results/chewbbaca_quast_tables

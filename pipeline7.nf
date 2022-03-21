@@ -34,26 +34,8 @@ if ( params.filter_contigs == true )
 	out_dir = out_dir+filter+"filter_"
 if ( params.assembly_improvement == true )
 	out_dir = out_dir+"Improved_pilon"
-
 println { out_dir }
 
-process fastqc_raw {
-	
-	publishDir "./Results/${out_dir}/${sampleID}/FastQC_Raw_reads", mode: 'copy'
-	
-	tag "${sampleID}"
-	
-	input:
-	tuple sampleID, file(reads) from raw_data_for_fastqc
-	val script_folder from script_fastqc
-
-	output:
-	file "*" into fastqc_raw_output
-	
-	"""
-	fastqc ${reads[0]} ${reads[1]} --outdir . 
-	"""
-}
 
 process fastp_qc_raw{
 	
