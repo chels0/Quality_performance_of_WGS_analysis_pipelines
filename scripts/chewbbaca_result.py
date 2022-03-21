@@ -8,6 +8,7 @@ Created on Tue Mar  8 10:29:30 2022
 import pandas as pd
 import sys
 import os
+import pathlib
 
 list_of_directories = []
 
@@ -18,9 +19,10 @@ columns = ['# contigs', 'Largest contig', 'Total length', 'Reference length',
                'Genome fraction (%)', 'GC (%)', 'Reference GC (%)', 'N50', 'NG50', '# misassemblies',
                '# mismatches per 100 kbp']
 
+
+
 for direct in os.listdir(directory):
     filename_chew = directory + '/' + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
-    print(filename_chew)
 
     #filename_chew = direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
     
@@ -32,14 +34,14 @@ for direct in os.listdir(directory):
     df = df.applymap(str) #change dataframe to string
     
     df.index.name = 'Sample' #set Sample as index name of dataframe
-    df.index = df.index.str.replace('.fasta','') #remove .fasta from sample names
+    df.index = df.index.str.replace('.fasta','', regex=True) #remove .fasta from sample names
     
     # indices = df.index.str.split('_') #split sample names on underscores
     
     # ids = [] #empty list for sample IDs
     # #Add sample IDs to list
     # for values in indices:
-    #     ids.append(values[0]) #append sample ID
+    #     ids.(values[0]) #append sample ID
     
     reference = df.iloc[[0],:] #get reference row, the first row of dataframe with all its columns
     reference = reference[[]] #empty the reference row
@@ -78,7 +80,7 @@ for direct in os.listdir(directory):
         nextt = nextt.diff() #calculate difference between rows
         to_change = nextt.iloc[[1],:] #extract row compared to reference
         bajs = to_change #set variable as row
-        to_compare = to_compare.append(bajs) #append row to to_compare
+        to_compare = pd.concat([to_compare, bajs]) #append row to to_compare
     
     #Convert ints back to their letter characters
     for col in to_compare:
@@ -92,7 +94,6 @@ for direct in os.listdir(directory):
     
     #QUAST
     filename_quast = directory + '/' + direct + '/MultiQC/multiqc_quast.tsv'
-    print(filename_quast)
     #filename_quast = sys.argv[2] #filename for quast result
     df2 = pd.read_csv(filename_quast, sep='\t', index_col=0) #create tab separated dataframe
     df4 = df2[columns] #keep only relevant columns
@@ -107,13 +108,16 @@ for direct in os.listdir(directory):
     kuk = pd.merge(df3, to_compare, how ="right", left_index= True, right_index = True) #merge two dataframes 
     kuk.fillna('', inplace=True) #fill nans with empty string
     kuk.replace('nan', '', inplace=True) #replace string nan with empty string
+    print(df.index)
     name_of_run = df.index[1] #sample name
     name = name_of_run.split('x_') #split sample name
+    print(name[1])
     #name_of_run = name_of_run.split('_contigs')
     
     #if len(name_of_run) == 1:
     #    name_of_run = name_of_run[0].split('_scaffolds')
    
+    pathlib.Path("Results/chewbbaca_quast_tables").mkdir(parents=True, exist_ok=True)
     
     kuk.to_csv('Results/chewbbaca_quast_tables/'+ name[1]+'_results.tsv', sep='\t', encoding='utf-8') #save to csv with name of run
 
