@@ -18,8 +18,10 @@ filter_setting.into { no_trim_skesa_filter_setting ; fastp_skesa_filter_setting 
 
 
 filter = params.filter_set
-spades_set = params.spades_set
-assembler = params.assembler
+spades_set = params.spades_set.toUpperCase() - ~/--/
+length = spades_set.length()
+character = spades_set.substring(0, length - (length-1))
+assembler = params.assembler 
 
 out_dir = ""
 if ( params.no_trim == true )
@@ -29,15 +31,15 @@ if ( params.trimmomatic == true )
 if ( params.fastp_trim_qc == true )
 	out_dir = out_dir+"F"
 if ( params.assembler == 'skesa' )
-	out_dir = out_dir+"Sk"
+	out_dir = out_dir+"Ske"
+
 if ( params.assembler == 'spades' )
-	out_dir = out_dir+"Sp"	
+	out_dir = out_dir+"Sp"+character	
 if ( params.filter_contigs == true )
 	out_dir = out_dir+filter+"f"
 if ( params.assembly_improvement == true )
 	out_dir = out_dir + "P"
-if ( params.assembler == 'spades' )
-	out_dir = out_dir+"_"+spades_set
+
 
 //else
 //	out_dir = ""

@@ -24,7 +24,6 @@ for filename in os.listdir(directory+'/chewbbaca_quast_tables/'):
 
 spades = []
 skesa = []
-
 string_lengths = []
 first_letters = []
 
@@ -32,7 +31,7 @@ for strings in list_of_files:
     first_letters.append(strings[0])
     length = len(strings)
     string_lengths.append(length)
-    if 'Sk' in strings:
+    if 'Ske' in strings:
         skesa.append(strings)
     elif 'Sp' in strings:
         spades.append(strings)
@@ -67,7 +66,7 @@ for length in unique_lengths:
             if len(strings) == length:
                 skesa_lists[count].append(strings)
         count = count+1
-        
+
 count = 0
 for letter in unique_letters:
     if count == 0:
@@ -108,14 +107,15 @@ for i in range(len(spades_same)):
     spades_lowest[i].remove(longest_string[0]) 
 
 skesa_and_spades = []
-for element in skesa:
-    skesa_element = element
-    spades_element = element.replace('Sk', 'Sp')
+for element in spades:
+    spades_element = element
+    skesa_element = element.replace('Sp', 'Ske')
     duplicate = [skesa_element, spades_element]
     skesa_and_spades.append(duplicate)
 
-
 all_lists = spades_lists+spades_lowest+spades_highest+skesa_lists+skesa_highest+skesa_lowest+skesa_and_spades
+
+print(skesa_and_spades)
 
 combos = [] #list of combinations of filenames
 
@@ -144,14 +144,16 @@ columns = ['Sample','# contigs', 'Largest contig', 'Total length', 'Reference le
                '# mismatches per 100 kbp']
 
 
+
+
 #Do pairwise comparison of two dataframes based on filename combinations        
-for files in combos:
+for files in combos2:
     filename1 = files[0] #name of first combination of files
     filename2 = files[1] # name of second combination of files
     
     #create dataframes
-    df = pd.read_csv(directory+'/chewbbaca_quast_tables/'+filename1+'.tsv', sep='\t')
-    df2 = pd.read_csv(directory+'/chewbbaca_quast_tables/'+filename2+'.tsv', sep= '\t')
+    df = pd.read_csv(directory+'/chewbbaca_quast_tables/'+filename1+'_results.tsv', sep='\t')
+    df2 = pd.read_csv(directory+'/chewbbaca_quast_tables/'+filename2+'_results.tsv', sep= '\t')
    
     
     indices = []
