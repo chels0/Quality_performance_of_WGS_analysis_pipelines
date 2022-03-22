@@ -12,22 +12,131 @@ import sys
 import os
 import itertools
 import pathlib
+import copy
 
 #name of directory
 directory = sys.argv[1]
-
 list_of_files = []
 
 #append filenames into list_of_files
 for filename in os.listdir(directory+'/chewbbaca_quast_tables/'):
-    list_of_files.append(filename.split('.')[0]) #split on . to separate filename from file extension
+    list_of_files.append(filename.split('_')[0]) #split on . to separate filename from file extension
+
+spades = []
+skesa = []
+
+string_lengths = []
+first_letters = []
+
+for strings in list_of_files:
+    first_letters.append(strings[0])
+    length = len(strings)
+    string_lengths.append(length)
+    if 'Sk' in strings:
+        skesa.append(strings)
+    elif 'Sp' in strings:
+        spades.append(strings)
+
+unique_letters = list(set(first_letters))
+length_of_letters = len(unique_letters)
+
+unique_lengths = list(set(string_lengths))
+length_of_lengths = len(unique_lengths)
+spades_lists = [[] for _ in range(length_of_lengths)]
+skesa_lists = [[] for _ in range(length_of_lengths)]
+
+spades_same = [[] for _ in range(length_of_letters)]
+skesa_same = [[] for _ in range(length_of_letters)]
+
+count = 0
+
+for length in unique_lengths:
+    if count == 0:
+        for strings in spades:
+            if len(strings) == length:
+                spades_lists[count].append(strings)
+        for strings in skesa:
+            if len(strings) == length:
+                skesa_lists[count].append(strings)
+        count = count + 1
+    else:
+        for strings in spades:
+            if len(strings) == length:
+                spades_lists[count].append(strings)
+        for strings in skesa:
+            if len(strings) == length:
+                skesa_lists[count].append(strings)
+        count = count+1
+        
+count = 0
+for letter in unique_letters:
+    if count == 0:
+        for strings in spades:
+            if strings[0] == letter:
+                spades_same[count].append(strings)
+        for strings in skesa:
+            if strings[0] == letter:
+                skesa_same[count].append(strings)
+        count = count + 1
+    else:
+        for strings in spades:
+            if strings[0] == letter:
+                spades_same[count].append(strings)
+        for strings in skesa:
+            if strings[0] == letter:
+                skesa_same[count].append(strings)
+        count = count + 1 
+
+skesa_highest = copy.deepcopy(skesa_same)
+skesa_lowest = copy.deepcopy(skesa_same)
+spades_highest = copy.deepcopy(skesa_same)
+spades_lowest = copy.deepcopy(skesa_same)
+
+len_max = max(string_lengths)
+len_min = min(string_lengths)
+
+for i in range(len(skesa_same)):
+    shortest_string = [s for s in skesa_highest[i] if len(s) == len_min]
+    skesa_highest[i].remove(shortest_string[0])
+    longest_string = [s for s in skesa_lowest[i] if len(s) == len_max]
+    skesa_lowest[i].remove(longest_string[0])
+    
+for i in range(len(spades_same)):
+    shortest_string = [s for s in spades_highest[i] if len(s) == len_min]
+    spades_highest[i].remove(shortest_string[0])
+    longest_string = [s for s in spades_lowest[i] if len(s) == len_max]
+    spades_lowest[i].remove(longest_string[0]) 
+
+skesa_and_spades = []
+for element in skesa:
+    skesa_element = element
+    spades_element = element.replace('Sk', 'Sp')
+    duplicate = [skesa_element, spades_element]
+    skesa_and_spades.append(duplicate)
+
+
+all_lists = spades_lists+spades_lowest+spades_highest+skesa_lists+skesa_highest+skesa_lowest+skesa_and_spades
 
 combos = [] #list of combinations of filenames
 
+
 #loop for creating all pairwise combinations of filenames
-for L in range(2, 3):
-    for subset in itertools.combinations(list_of_files, L):
-        combos.append(subset)
+for lists in all_lists:
+    for L in range(2, 3):
+        for subset in itertools.combinations(lists, L):
+            combos.append(subset)
+to_remove = []
+
+combos2 = list(set(combos))
+
+for tuples in combos2:
+    if 'f' in tuples[0] and 'fP' not in tuples[0] and 'P' in tuples[1] and 'fP' not in tuples[1]:
+        to_remove.append(tuples)
+    if 'f' in tuples[1] and 'fP' not in tuples[1] and 'P' in tuples[0] and 'fP' not in tuples[0]:
+        to_remove.append(tuples)
+
+for tuples in to_remove:
+    combos2.remove((tuples[0],tuples[1]))    
 
 #relevant columns
 columns = ['Sample','# contigs', 'Largest contig', 'Total length', 'Reference length', 
