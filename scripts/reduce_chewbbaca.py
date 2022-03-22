@@ -16,6 +16,8 @@ import copy
 
 #name of directory
 directory = sys.argv[1]
+#directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results'
+
 list_of_files = []
 
 #append filenames into list_of_files
@@ -36,6 +38,10 @@ for strings in list_of_files:
         skesa.append(strings)
     elif 'Sp' in strings:
         spades.append(strings)
+
+skesa_char = skesa[0][1:4]
+spades_char = spades[0][1:3]
+spades_set = spades[0][3:4]
 
 unique_letters = list(set(first_letters))
 length_of_letters = len(unique_letters)
@@ -110,7 +116,7 @@ for i in range(len(spades_same)):
 skesa_and_spades = []
 for element in skesa:
     skesa_element = element
-    spades_element = element.replace('Sk', 'Sp')
+    spades_element = element.replace(skesa_char, spades_char+spades_set)
     duplicate = [skesa_element, spades_element]
     skesa_and_spades.append(duplicate)
 
