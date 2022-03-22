@@ -17,44 +17,56 @@ filter_setting = Channel.value(params.filter_set)
 filter_setting.into { no_trim_skesa_filter_setting ; fastp_skesa_filter_setting ; trimmomatic_skesa_filter_setting ; no_trim_spades_filter_setting ; fastp_spades_filter_setting ; trimmomatic_spades_filter_setting }
 
 
-out_dir = ""
 filter = params.filter_set
 spades_set = params.spades_set
 assembler = params.assembler
 
+out_dir = ""
 if ( params.no_trim == true )
-	out_dir = out_dir+"No_trimming_"+assembler+"_"
+	out_dir = out_dir+"N"
 if ( params.trimmomatic == true )
-	out_dir = out_dir+"After_trimmomatic_"+assembler+"_"
+	out_dir = out_dir+"T"
 if ( params.fastp_trim_qc == true )
-	out_dir = out_dir+"After_fastp_"+assembler+"_"
+	out_dir = out_dir+"F"
+if ( params.assembler == 'skesa' )
+	out_dir = out_dir+"Sk"
 if ( params.assembler == 'spades' )
-	out_dir = out_dir+spades_set+"_"
+	out_dir = out_dir+"Sp"	
 if ( params.filter_contigs == true )
-	out_dir = out_dir+filter+"filter_"
+	out_dir = out_dir+filter+"f"
 if ( params.assembly_improvement == true )
-	out_dir = out_dir+"Improved_pilon"
+	out_dir = out_dir + "P"
+if ( params.assembler == 'spades' )
+	out_dir = out_dir+"_"+spades_set
+
+//else
+//	out_dir = ""
+//	if ( params.no_trim == true )
+//		out_dir = out_dir+"NSp"
+//	if ( params.trimmomatic == true )
+//		out_dir = out_dir+"TSp"
+//	if ( params.fastp_trim_qc == true )
+//		out_dir = out_dir+"FSp"
+//	if ( params.filter_contigs == true )
+//		out_dir = out_dir+filter+"f"
+//	if ( params.assembly_improvement == true )
+//		out_dir = out_dir + "P"
+//	out_dir = out_dir+"_"+spades_set
+
+//if ( params.no_trim == true )
+//	out_dir = out_dir+"No_trimming_"+assembler+"_"
+//if ( params.trimmomatic == true )
+//	out_dir = out_dir+"After_trimmomatic_"+assembler+"_"
+//if ( params.fastp_trim_qc == true )
+//	out_dir = out_dir+"After_fastp_"+assembler+"_"
+//if ( params.assembler == 'spades' )
+//	out_dir = out_dir+spades_set+"_"
+//if ( params.filter_contigs == true )
+//	out_dir = out_dir+filter+"filter_"
+//if ( params.assembly_improvement == true )
+//	out_dir = out_dir+"Improved_pilon"
 println { out_dir }
 
-
-process fastp_qc_raw{
-	
-	publishDir "./Results/${out_dir}/${sampleID}/Fastp_QC_Raw_reads", mode: 'copy'
-	tag "${sampleID}"
-	
-	input:
-	tuple sampleID, file(reads) from raw_data_for_Fastp_raw
-	
-	output:
-	file "Reports/*" into fastp_reports_raw_reads
-	
-	"""
-	mkdir Reports
-	fastp -A -L -Q -G -i ${reads[0]} -I ${reads[1]} -o ${sampleID}_R1.fq.gz -O ${sampleID}_R2.fq.gz
-	mv fastp* ./Reports
-	""" 
-	
-}
 	
 process fastp_trimming{
 	
@@ -191,14 +203,14 @@ process assembly_no_trim{
 	if ( params.assembler == 'skesa' )
 		if ( params.filter_contigs == false )
 			"""
-			skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_trim_fastp_skesa_contigs.fasta
+			skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_no_trim_skesa_contigs.fasta
 		
 			"""
 		else
 			"""
-			skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_trim_fastp_skesa_contigs.fasta
-			python3 ${script_folder}/remove_contaminants.py ${sampleID}_trim_fastp_skesa_contigs ${filter_settings}
-			rm ${sampleID}_skesa_contigs.fasta
+			skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_no_trim_skesa_contigs.fasta
+			python3 ${script_folder}/remove_contaminants.py ${sampleID}_no_trim_skesa_contigs ${filter_settings}
+			rm ${sampleID}_no_trim_skesa_contigs.fasta
 			"""
 	
 	else if ( params.assembler == 'spades')
@@ -206,15 +218,15 @@ process assembly_no_trim{
 	
 			"""
 			spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
-			mv scaffolds.fasta ./${sampleID}_trim_fastp_spades_${settings}_scaffolds.fasta
+			mv scaffolds.fasta ./${sampleID}_no_trim_spades_${settings}_scaffolds.fasta
 			"""
 		else
 	
 			"""
 			spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
-			mv scaffolds.fasta ./${sampleID}_trim_fastp_spades_${settings}_scaffolds.fasta
-			python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_trim_fastp_spades_${settings}_scaffolds ${filter_settings}
-			rm ${sampleID}_trim_fastp_spades_${settings}_scaffolds.fasta
+			mv scaffolds.fasta ./${sampleID}_no_trim_spades_${settings}_scaffolds.fasta
+			python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_no_trim_spades_${settings}_scaffolds ${filter_settings}
+			rm ${sampleID}_no_trim_spades_${settings}_scaffolds.fasta
 			"""
 			
 	
@@ -254,7 +266,7 @@ process assembly_after_fastp{
 			"""
 			skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_trim_fastp_skesa_contigs.fasta
 			python3 ${script_folder}/remove_contaminants.py ${sampleID}_trim_fastp_skesa_contigs ${filter_settings}
-			rm ${sampleID}_skesa_contigs.fasta
+			rm ${sampleID}_trim_fastp_skesa_contigs.fasta
 			"""
 	
 	else if ( params.assembler == 'spades')
@@ -298,14 +310,14 @@ process assembly_after_trimmomatic{
 	if ( params.assembler == 'skesa' )
 		if ( params.filter_contigs == false )
 			"""
-			skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_trim_fastp_skesa_contigs.fasta
+			skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_trim_trimmomatic_skesa_contigs.fasta
 		
 			"""
 		else
 			"""
-			skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_trim_fastp_skesa_contigs.fasta
-			python3 ${script_folder}/remove_contaminants.py ${sampleID}_trim_fastp_skesa_contigs ${filter_settings}
-			rm ${sampleID}_skesa_contigs.fasta
+			skesa --reads ${reads[0]},${reads[1]} --use_paired_ends > ${sampleID}_trim_trimmomatic_skesa_contigs.fasta
+			python3 ${script_folder}/remove_contaminants.py ${sampleID}_trim_trimmomatic_skesa_contigs ${filter_settings}
+			rm ${sampleID}_trim_trimmomatic_skesa_contigs.fasta
 			"""
 	
 	else if ( params.assembler == 'spades')
@@ -313,15 +325,15 @@ process assembly_after_trimmomatic{
 	
 			"""
 			spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
-			mv scaffolds.fasta ./${sampleID}_trim_fastp_spades_${settings}_scaffolds.fasta
+			mv scaffolds.fasta ./${sampleID}_trim_trimmomatic_spades_${settings}_scaffolds.fasta
 			"""
 		else
 	
 			"""
 			spades.py -1 ${reads[0]} -2 ${reads[1]} -o . ${settings}
-			mv scaffolds.fasta ./${sampleID}_trim_fastp_spades_${settings}_scaffolds.fasta
-			python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_trim_fastp_spades_${settings}_scaffolds ${filter_settings}
-			rm ${sampleID}_trim_fastp_spades_${settings}_scaffolds.fasta
+			mv scaffolds.fasta ./${sampleID}_trim_trimmomatic_spades_${settings}_scaffolds.fasta
+			python3 ${script_folder}/remove_contaminants_spades.py ${sampleID}_trim_trimmomatic_spades_${settings}_scaffolds ${filter_settings}
+			rm ${sampleID}_trim_trimmomatic_spades_${settings}_scaffolds.fasta
 			"""
 		
 
