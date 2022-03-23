@@ -113,21 +113,17 @@ for i in range(len(spades_same)):
     spades_lowest[i].remove(longest_string[0]) 
 
 skesa_and_spades = []
-<<<<<<< HEAD
 for element in spades:
     spades_element = element
     skesa_element = element.replace('Sp', 'Ske')
-=======
+
 for element in skesa:
     skesa_element = element
     spades_element = element.replace(skesa_char, spades_char+spades_set)
->>>>>>> 40a91c41a23289b0eef6cb5c6a29e5accd1e54f8
     duplicate = [skesa_element, spades_element]
     skesa_and_spades.append(duplicate)
 
 all_lists = spades_lists+spades_lowest+spades_highest+skesa_lists+skesa_highest+skesa_lowest+skesa_and_spades
-
-print(skesa_and_spades)
 
 combos = [] #list of combinations of filenames
 
@@ -147,9 +143,11 @@ for tuples in combos2:
     if 'f' in tuples[1] and 'fP' not in tuples[1] and 'P' in tuples[0] and 'fP' not in tuples[0]:
         to_remove.append(tuples)
 
+
+
 for tuples in to_remove:
     combos2.remove((tuples[0],tuples[1]))    
-
+print(len(combos2))
 #relevant columns
 columns = ['Sample','# contigs', 'Largest contig', 'Total length', 'Reference length', 
                'Genome fraction (%)', 'GC (%)', 'Reference GC (%)', 'N50', 'NG50', '# misassemblies',
@@ -230,6 +228,7 @@ for files in combos2:
     #save to csv
     pathlib.Path('Results/Comparisons').mkdir(parents=True, exist_ok=True)
     comp.to_csv('Results/Comparisons/'+ filename3[0]+'_vs_'+filename4[0]+'.tsv', sep='\t', encoding='utf-8')
+
 
 # #test3 = pd.concat([df_quast, df2_quast], keys=[filename, filename2], axis=1, sort=False)
 

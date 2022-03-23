@@ -21,6 +21,8 @@ then
     exit 9999 # die with error code 9999
 fi
 
+echo "your output directory is:" ${outdir} "cancel script if this is wrong"
+
 #Generate config files to be used in config_files folder
 python3 scripts/automatisation_v2.py
 
@@ -34,9 +36,13 @@ sed "s/PATHS/$path/g" parameter_settings.txt > parameter_path.txt #exchange PATH
 
 source ../../miniconda3/bin/activate env_version1 #activate conda environment
 
+counter=0
+
 #Iterate over each config file generatated and run the pipeline with those settings specified in the config file
 for file in config_files/*;
 do
+	counter=$[counter + 1]
+
 	head -16 parameter_path.txt > nextflow.config #Keep first 15 rows of parameter file which contains paremeters not to be changed and append to nextflow.config
 	cat $file >> nextflow.config #append parameters in parameter file which will be changed with each iteration
 	grep fastqc_set parameter_path.txt -A 10 >> nextflow.config #grep the last set of parameters not to be changed by the system and append to config file
@@ -58,12 +64,19 @@ do
 	nextflow pipeline7.nf -profile conda -resume
 	
 	#If outdir is not the Results folder in the pipeline directory, move the results to the wanted outdirectory
+
+	
 	if [ "${outdir}" != Results ];
 	then
         	mv Results/* $outdir/.
 	fi
-
-	rm -r work #remove nextflow work directory
+	
+	if [ "${counter}" == 8 ];
+	then
+		counter=0
+		rm -r work #remove nextflow work directory
+	fi
+	
 	>nextflow.config #empty the config file
 done
 

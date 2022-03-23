@@ -11,6 +11,10 @@ scripts_folder = Channel.value(params.path_to_scripts)
 scripts_folder.into { script_fastqc ; script_spades_no_trim ; script_skesa_no_trim ; script_spades_fastp ; script_skesa_fastp ; script_spades_trimmomatic ; script_skesa_trimmomatic}
 
 trimmomatic_setting = Channel.value(params.trimmomatic_set)
+adapters = Channel.value(params.adapter)
+minority_adapter = Channel.value(params.not_used_first_adapter)
+
+
 spades_setting = Channel.value(params.spades_set)
 spades_setting.into { no_trim_settings ; trim_trimmomatic_setting ; trim_fastp_setting }
 filter_setting = Channel.value(params.filter_set)
@@ -125,6 +129,8 @@ process trimmomatic{
 	input:
 	tuple sampleID, file(reads) from raw_data_for_trimmomatic 
 	val settings from trimmomatic_setting
+	val adapter from adapters
+	val lab from minority_adapter
 	
 	output:
 	tuple sampleID, file("*_paired.fq.gz") into trimmomatic_output 
@@ -132,8 +138,14 @@ process trimmomatic{
 	when:
 	params.trimmomatic == true
 	
+	script:
+	if ( sampleID.contains(lab[0]) || sampleID.contains(lab[1]) || sampleID.contains(lab[2]) || sampleID.contains(lab[3]) )
+		adapters = adapter[1]
+	else
+		adapters = adapter[0]
+	
 	"""
-	trimmomatic PE ${reads[0]} ${reads[1]} ${sampleID}_R1_paired.fq.gz ${sampleID}_R1_unpaired.fq.gz ${sampleID}_R2_paired.fq.gz ${sampleID}_R2_unpaired.fq.gz ${settings}
+	trimmomatic PE ${reads[0]} ${reads[1]} ${sampleID}_R1_paired.fq.gz ${sampleID}_R1_unpaired.fq.gz ${sampleID}_R2_paired.fq.gz ${sampleID}_R2_unpaired.fq.gz ${adapters} ${settings}
 	"""
 
 
