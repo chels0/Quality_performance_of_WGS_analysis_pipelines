@@ -18,13 +18,25 @@ do
 	do
 		ls $outdir/${dir}/${dir2} > $outdir/${dir}/${dir2}/results_list.txt
 		sed -i '/results_list.txt/d' $outdir/${dir}/${dir2}/results_list.txt
-		if grep -Fxq "Pilon" $outdir/${dir}/${dir2}/results_list.txt
+		
+		if grep -Fxq "skesa" $outdir/${dir}/${dir2}/results_list.txt
 		then
-			cp $outdir/${dir}/${dir2}/Pilon/spades/* $outdir/${dir}/Assemblies/.
-			cp $outdir/${dir}/${dir2}/Pilon/skesa/* $outdir/${dir}/Assemblies/.
-		else
-			cp $outdir/${dir}/${dir2}/spades/${dir2}* $outdir/${dir}/Assemblies/.
-			cp $outdir/${dir}/${dir2}/skesa/* $outdir/${dir}/Assemblies/.
+			if grep -Fxq "Pilon" $outdir/${dir}/${dir2}/results_list.txt
+			then
+				cp $outdir/${dir}/${dir2}/Pilon/skesa/* $outdir/${dir}/Assemblies/.
+			else
+				cp $outdir/${dir}/${dir2}/skesa/* $outdir/${dir}/Assemblies/.
+			fi
+		fi
+		
+		if grep -Fxq "spades" $outdir/${dir}/${dir2}/results_list.txt
+		then
+			if grep -Fxq "Pilon" $outdir/${dir}/${dir2}/results_list.txt
+			then
+				cp $outdir/${dir}/${dir2}/Pilon/spades/* $outdir/${dir}/Assemblies/.
+			else
+				cp $outdir/${dir}/${dir2}/spades/${dir2}* $outdir/${dir}/Assemblies/.
+			fi
 		fi
 		
 	done
