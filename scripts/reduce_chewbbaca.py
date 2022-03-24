@@ -22,7 +22,7 @@ list_of_files = []
 
 #append filenames into list_of_files
 
-for filename in os.listdir('Results/chewbbaca_quast_tables'):
+for filename in os.listdir('/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables'):
     list_of_files.append(filename.split('_')[0]) #split on . to separate filename from file extension
 
 spades = []
@@ -148,14 +148,10 @@ for tuples in combos2:
 
 for tuples in to_remove:
     combos2.remove((tuples[0],tuples[1]))    
-print(len(combos2))
 #relevant columns
 columns = ['Sample','# contigs', 'Largest contig', 'Total length', 'Reference length', 
                'Genome fraction (%)', 'GC (%)', 'Reference GC (%)', 'N50', 'NG50', '# misassemblies',
                '# mismatches per 100 kbp']
-
-
-
 
 #Do pairwise comparison of two dataframes based on filename combinations        
 for files in combos2:
@@ -163,8 +159,8 @@ for files in combos2:
     filename2 = files[1] # name of second combination of files
     
     #create dataframes
-    df = pd.read_csv('Results/chewbbaca_quast_tables/'+filename1+'_results.tsv', sep='\t')
-    df2 = pd.read_csv('Results/chewbbaca_quast_tables/'+filename2+'_results.tsv', sep= '\t')
+    df = pd.read_csv('/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables/'+filename1+'_results.tsv', sep='\t')
+    df2 = pd.read_csv('/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables/'+filename2+'_results.tsv', sep='\t')
    
     
     indices = []
@@ -188,13 +184,18 @@ for files in combos2:
     df.index = indices 
     df2.index = indices
     
+
+    
     #extract chewbbaca columns to new dataframes
     df_chewbbaca = df.drop(columns, axis=1)
+    df_chewbbaca = df_chewbbaca.applymap(str) #turn dataframe to string
     df2_chewbbaca = df2.drop(columns, axis=1)
-    
+    df2_chewbbaca = df2_chewbbaca.applymap(str) #turn dataframe to string
+
     #extract differences between two chewbbaca dataframes
     test2 = df_chewbbaca.compare(df2_chewbbaca, align_axis=1).rename(columns={'self': filename1, 'other': filename2}, level=-1)
     test2 = test2.fillna('')
+
     
     #extract quast columns to new dataframe
     df_quast = df[columns]
@@ -203,32 +204,39 @@ for files in combos2:
     #drop sample column
     df_quast = df_quast.drop('Sample', axis=1)
     df2_quast = df2_quast.drop('Sample', axis=1)
+    df_quast = df_quast.applymap(str) #turn dataframe to string
+    df2_quast = df2_quast.applymap(str) #turn dataframe to string
+
+    #extract differences between two quast dataframes
+    test3 = df_quast.compare(df2_quast, align_axis=1).rename(columns={'self': filename, 'other': filename2}, level=-1)
     
     #define filenames for csv table
     filename3 = filename1.split('_results')
     filename4 = filename2.split('_results')
  
-    pathlib.Path('Results/Comparisons/Chewbbaca_comparisons/').mkdir(parents=True, exist_ok=True)
-    #save chewbbaca comparisons
-    test2.to_csv('Results/Comparisons/Chewbbaca_comparisons/'+filename3[0]+'_vs_'+filename4[0]+'_chewbbaca.tsv', sep='\t', encoding='utf-8')
-    
-    #extract differences between two quast dataframes
-    test3 = df_quast.compare(df2_quast, align_axis=1).rename(columns={'self': filename, 'other': filename2}, level=-1)
-    
-    #save quast dataframes
-    pathlib.Path('Results/Comparisons/Quast_comparisons/').mkdir(parents=True, exist_ok=True)
-    test3.to_csv('Results/Comparisons/Quast_comparisons/'+filename3[0]+'_vs_'+filename4[0]+'_quast.tsv', sep='\t', encoding='utf-8')
+   
     
     #merge quast and chewbbaca results
     #merged = pd.merge(test3,test2,left_index= True, right_index=True, how="outer")
     #merged = merged.fillna('')
     #merged.sort_index(inplace=True, ascending=False)
     
+    df = df.applymap(str) #turn dataframe to string
+    df2 = df2.applymap(str) #turn dataframe to string
+
     comp = df.compare(df2, align_axis=1).rename(columns={'self': filename1, 'other': filename2}, level=-1)
     comp = comp.fillna('')
-    
-    
+        
     #save to csv
+    pathlib.Path('Results/Comparisons/Chewbbaca_comparisons/').mkdir(parents=True, exist_ok=True)
+    #save chewbbaca comparisons
+    test2.to_csv('Results/Comparisons/Chewbbaca_comparisons/'+filename3[0]+'_vs_'+filename4[0]+'_chewbbaca.tsv', sep='\t', encoding='utf-8')
+    
+    
+    
+    #save quast dataframes
+    pathlib.Path('Results/Comparisons/Quast_comparisons/').mkdir(parents=True, exist_ok=True)
+    test3.to_csv('Results/Comparisons/Quast_comparisons/'+filename3[0]+'_vs_'+filename4[0]+'_quast.tsv', sep='\t', encoding='utf-8')
     pathlib.Path('Results/Comparisons/Quast+Chewbbaca_comparisons/').mkdir(parents=True, exist_ok=True)
     comp.to_csv('Results/Comparisons/Quast+Chewbbaca_comparisons/'+ filename3[0]+'_vs_'+filename4[0]+'.tsv', sep='\t', encoding='utf-8')
 
