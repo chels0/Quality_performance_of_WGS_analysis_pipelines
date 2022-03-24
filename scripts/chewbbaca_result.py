@@ -7,8 +7,8 @@ import pathlib
 
 list_of_directories = []
 
-#directory = sys.argv[1]
-directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/'
+directory = sys.argv[1]
+#directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/'
 
 
 #Define relevant columns to keep in dataframe
@@ -19,8 +19,8 @@ columns = ['# contigs', 'Largest contig', 'Total length', 'Reference length',
 
 
 for direct in os.listdir(directory):
-    #filename_chew = directory + '/' + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
-    filename_chew = directory+direct+'/results_alleles.tsv'
+    filename_chew = directory + '/' + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
+    #filename_chew = directory+direct+'/results_alleles.tsv'
     #filename_chew = direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
     
 
@@ -70,20 +70,20 @@ for direct in os.listdir(directory):
     to_compare = df.iloc[[0],:] #reference row that all other rows will be compared to
     
     empty = []
-    
+    pathlib.Path("Results/chewbbaca_quast_tables").mkdir(parents=True, exist_ok=True)
     #Compare each row in dataframe to reference row and calculate difference
     for i in range(len(df)):
         nextt = df.iloc[[0,i],:] #row to be compared to reference along with reference
-        reference = nextt.iloc[[0]].reset_index()
-        reference.drop('Sample', axis=1, inplace=True)
+        ref = nextt.iloc[[0]].reset_index()
+        ref.drop('Sample', axis=1, inplace=True)
         to_change = nextt.iloc[[1]]
-        reference.insert(0, 'Sample', to_change.index)
-        reference.set_index('Sample', inplace = True)
-        comp = reference.compare(to_change, align_axis=1).rename(columns={'self': 'Reference', 'other': to_change.index[0]}, level=-1)
+        ref.insert(0, 'Sample', to_change.index)
+        ref.set_index('Sample', inplace = True)
+        comp = ref.compare(to_change, align_axis=1).rename(columns={'self': 'Reference', 'other': to_change.index[0]}, level=-1)
         colu = comp.columns.get_level_values(0)
         colu = colu[~colu.duplicated()]
-        with open(direct+'_samples', 'a') as file2:
-            file2.write("%s" % to_change.index[0] + '\t')
+        with open('Results/chewbbaca_quast_tables/'+direct+'_samples.txt', 'a') as file2:
+            file2.write("%s" % to_change.index[0] + '\t' + str(len(colu)) + '\t')
             file2.writelines(colu + ' ')
             file2.write('\n')
         nextt = nextt.diff() #calculate difference between rows
@@ -100,6 +100,9 @@ for direct in os.listdir(directory):
     
         
     to_compare = to_compare[~to_compare.index.duplicated(keep='last')] #remove duplicate reference row
+    
+    #COLUMNS
+    columns_with_no_diff = to_compare.apply(pd.value_counts).dropna(thresh=10) #columns where a lot of samples have the same values
     
     #QUAST
     filename_quast = directory + '/' + direct + '/MultiQC/multiqc_quast.tsv'
@@ -125,10 +128,9 @@ for direct in os.listdir(directory):
     #if len(name_of_run) == 1:
     #    name_of_run = name_of_run[0].split('_scaffolds')
    
-    pathlib.Path("Results/chewbbaca_quast_tables").mkdir(parents=True, exist_ok=True)
     
     kuk.to_csv('Results/chewbbaca_quast_tables/'+ direct+'_results.tsv', sep='\t', encoding='utf-8') #save to csv with name of run
-
+    columns_with_no_diff.to_csv('Results/chewbbaca_quast_tables/'+ direct+'_common_columns.tsv', sep='\t', encoding='utf-8') #save to csv with name of run
 
 # for index, row in df.iterrows():
 #     hej.append(row[0])
