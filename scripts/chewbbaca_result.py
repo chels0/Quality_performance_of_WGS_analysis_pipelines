@@ -7,7 +7,9 @@ import pathlib
 
 list_of_directories = []
 
-directory = sys.argv[1]
+#directory = sys.argv[1]
+directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/'
+
 
 #Define relevant columns to keep in dataframe
 columns = ['# contigs', 'Largest contig', 'Total length', 'Reference length', 
@@ -17,8 +19,8 @@ columns = ['# contigs', 'Largest contig', 'Total length', 'Reference length',
 
 
 for direct in os.listdir(directory):
-    filename_chew = directory + '/' + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
-
+    #filename_chew = directory + '/' + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
+    filename_chew = directory+direct+'/results_alleles.tsv'
     #filename_chew = direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
     
 
@@ -72,6 +74,18 @@ for direct in os.listdir(directory):
     #Compare each row in dataframe to reference row and calculate difference
     for i in range(len(df)):
         nextt = df.iloc[[0,i],:] #row to be compared to reference along with reference
+        reference = nextt.iloc[[0]].reset_index()
+        reference.drop('Sample', axis=1, inplace=True)
+        to_change = nextt.iloc[[1]]
+        reference.insert(0, 'Sample', to_change.index)
+        reference.set_index('Sample', inplace = True)
+        comp = reference.compare(to_change, align_axis=1).rename(columns={'self': 'Reference', 'other': to_change.index[0]}, level=-1)
+        colu = comp.columns.get_level_values(0)
+        colu = colu[~colu.duplicated()]
+        with open(direct+'_samples', 'a') as file2:
+            file2.write("%s" % to_change.index[0] + '\t')
+            file2.writelines(colu + ' ')
+            file2.write('\n')
         nextt = nextt.diff() #calculate difference between rows
         to_change = nextt.iloc[[1],:] #extract row compared to reference
         bajs = to_change #set variable as row
