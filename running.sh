@@ -100,15 +100,14 @@ source ../../miniconda3/bin/activate python_env_version1 #activate conda environ
 
 rm -r Results/Comparisons
 rm -r Results/chewbbaca_quast_tables
+rm -r ${outdir}/Comparisons
+rm -r ${outdir}/chewbbaca_quast_tables
+
 python3 scripts/chewbbaca_result.py ${outdir} 
-python3 scripts/reduce_chewbbaca.py ${outdir}
+python3 scripts/reduce_chewbbaca.py
 
-mv chewbbaca_quast_tables ${outdir}/.
-mv Comparisons ${outdir}/.
-
-rm path1.txt
-rm path.txt
-rm directory_list.txt
+mv Results/chewbbaca_quast_tables ${outdir}/.
+mv Results/Comparisons ${outdir}/.
 
 
 

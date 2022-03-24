@@ -94,7 +94,7 @@ for direct in os.listdir(directory):
     df4 = df2[columns] #keep only relevant columns
     df3 = pd.concat([reference, df4], sort=False) #add empty reference row to dataframe
     df3 = df3.reset_index() #remove sample names as index
-    print(df)
+
     df3.index = df.index #set index of quast dataframe as the index of chewbbaca dataframe
     df3 = df3.drop('Sample', axis=1) #remove sample column which is not index
     
