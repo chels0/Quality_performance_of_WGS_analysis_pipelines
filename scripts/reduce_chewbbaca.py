@@ -95,8 +95,8 @@ for letter in unique_letters:
 
 skesa_highest = copy.deepcopy(skesa_same)
 skesa_lowest = copy.deepcopy(skesa_same)
-spades_highest = copy.deepcopy(skesa_same)
-spades_lowest = copy.deepcopy(skesa_same)
+spades_highest = copy.deepcopy(spades_same)
+spades_lowest = copy.deepcopy(spades_same)
 
 len_max = max(string_lengths)
 len_min = min(string_lengths)
@@ -208,7 +208,7 @@ for files in combos2:
     df2_quast = df2_quast.applymap(str) #turn dataframe to string
 
     #extract differences between two quast dataframes
-    test3 = df_quast.compare(df2_quast, align_axis=1).rename(columns={'self': filename, 'other': filename2}, level=-1)
+    test3 = df_quast.compare(df2_quast, align_axis=1).rename(columns={'self': filename1, 'other': filename2}, level=-1)
     
     #define filenames for csv table
     filename3 = filename1.split('_results')

@@ -8,25 +8,51 @@ Created on Wed Mar  2 12:52:40 2022
 import itertools
 
 #Define parameters to be used in lists
+
 filtering = ['\tfilter_contigs']
 improv = ['\tassembly_improvement']
 no_trim = ['\tno_trim']
 fastp_trim_qc = ['\tfastp_trim_qc']
 trimmomatic = ['\ttrimmomatic']
-assembler = ['\tassembler']
-assembly_programs = [" = 'skesa'\n", "= 'spades'\n"]
 bools = [' = false\n', ' = true\n']
 trues = [' = true\n']
 falses = [' = false\n']
+assembler = ['\tassembler']
+assembly_programs = [" = 'skesa'\n", "= 'spades'\n"]
 
+names_of_settings = ['\tfilter_set', '\tspades_set']
+name_of_settings_variables = [[' = 200\n', ' = 500\n' ], [' = --careful\n', ' = --isolate\n']]
+
+filter_set = ['\tfilter_set']
+filter_variables = [' = 200\n', ' = 500\n' ]
+spades_set = ['\tspades_set']
+spades_variables = [' = --careful\n', ' = --isolate\n']
+ 
+
+dic = { 'setting' : filter_set, 'variables' : filter_variables, 'dependency' : filtering[0]+falses[0]}
+spades_dic = { 'setting' : 'bajs' }
+
+
+
+filter_list = []
+for element in filter_variables:
+    filter_list.append(filter_set[0] + element)
+
+# spades_list = list(itertools.product(spades_set, spades_variables))
+spades_list = []
+for element in spades_variables:
+    spades_list.append(spades_set[0] + element)
+
+comb = list(itertools.product(no_trim, trues, filtering, bools, improv, bools, assembler, assembly_programs))
+var_comb = list(itertools.product(filter_list, spades_list))
 # Create all combinations of parameters when no trimming is chosen
-no_trim_set = list(itertools.product(no_trim, trues, filtering, bools, improv, bools, assembler, assembly_programs))
+no_trim_set = list(itertools.product(no_trim, trues, filtering, bools, improv, bools, assembler, assembly_programs, filter_set, filter_variables))
 
 #Create all combinations of parameters when fastp trimming is chosen
-fastp_trim_set = list(itertools.product(fastp_trim_qc, trues, filtering, bools, improv, bools, assembler, assembly_programs ))
+fastp_trim_set = list(itertools.product(fastp_trim_qc, trues, filtering, bools, improv, bools, assembler, assembly_programs, filter_set, filter_variables))
 
 #Create all combinations of parameters when trimmomatic is chosen
-trimmomatic_set = list(itertools.product(trimmomatic, trues, filtering, bools, improv, bools, assembler, assembly_programs))
+trimmomatic_set = list(itertools.product(trimmomatic, trues, filtering, bools, improv, bools, assembler, assembly_programs, filter_set, filter_variables))
 
 #Define empty lists to put results in
 no_trim_settings = []
@@ -69,15 +95,25 @@ test_list = []
 
 length = len(no_trim_settings[0]) #number of parameters in each settings list
 
+filter_cont = filtering[0]+falses[0]
+combos = []
+
+no_trim_settings2 = []
 #Iterate over settings lists and combine the elements of list with parameters into one index
 for i in range(len(no_trim_settings)):
     no_trim_settings[i][0:length] = [''.join(no_trim_settings[i][0:length])]
     fastp_settings[i][0:length] = [''.join(fastp_settings[i][0:length])]
     trimmomatic_settings[i][0:length] = [''.join(trimmomatic_settings[i][0:length])]
 
+    if filter_cont in no_trim_settings[i][0]:
+        for val in filter_list:
+            no_trim_settings[i][0]=no_trim_settings[i][0].replace(val, '')
+
+
 #Create a config file for each list in no_trim_settings     
 for element in no_trim_settings:
     count = count + 1 #counter for id of config file
+    
     #If count is less than 9 add a 0 before count
     if count > 9:
     	with open('config_files/Run'+ str(count), 'w') as file2:
