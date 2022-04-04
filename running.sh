@@ -24,6 +24,7 @@ fi
 echo "your output directory is:" ${outdir} "cancel script if this is wrong"
 
 #Generate config files to be used in config_files folder
+#Generate config files to be used in config_files folder
 python3 scripts/automatisation_v2.py
 
 #Add current path to txt file and add backslashes so it can be used with sed to automatically change path of the parameter_settings.txt file 
@@ -95,6 +96,7 @@ do
 	multiqc ${dir}/PT*/Quast -o ${dir}/MultiQC
 	cp ${dir}/MultiQC/multiqc_data/multiqc_quast.txt ${dir}/MultiQC/multiqc_quast.tsv
 done        
+
 
 source ../../miniconda3/bin/activate python_env_version1 #activate conda environment
 

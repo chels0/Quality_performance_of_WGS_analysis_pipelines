@@ -22,7 +22,7 @@ list_of_files = []
 
 #append filenames into list_of_files
 
-for filename in os.listdir('/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables'):
+for filename in os.listdir('Results/chewbbaca_quast_tables'):
     list_of_files.append(filename.split('_')[0]) #split on . to separate filename from file extension
 
 spades = []
@@ -159,8 +159,8 @@ for files in combos2:
     filename2 = files[1] # name of second combination of files
     
     #create dataframes
-    df = pd.read_csv('/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables/'+filename1+'_results.tsv', sep='\t')
-    df2 = pd.read_csv('/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables/'+filename2+'_results.tsv', sep='\t')
+    df = pd.read_csv('Results/chewbbaca_quast_tables/'+filename1+'_results.tsv', sep='\t')
+    df2 = pd.read_csv('Results/chewbbaca_quast_tables/'+filename2+'_results.tsv', sep='\t')
    
     
     indices = []
