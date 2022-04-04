@@ -19,13 +19,16 @@ trues = [' = true\n']
 falses = [' = false\n']
 spades_variables = [' = --careful\n', ' = --isolate\n']
 filter_variables = [' = 100\n', ' = 200\n' , ' = 300\n']
+djur = ['\tdjur']
+test = [' = ko\n', ' = kossa\n']
+assembler = ['\tassembler']
+assembly_programs = [" = 'skesa'\n", "= 'spades'\n"]
 
-no_trim_set = list(itertools.product(no_trim, trues, filtering, bools, improv, bools, spades_set, spades_variables))
-fastp_trim_set = list(itertools.product(fastp_trim_qc, trues, filtering, bools, improv, bools, spades_set, spades_variables))
-trimmomatic_set = list(itertools.product(trimmomatic, trues, filtering, bools, improv, bools, spades_set, spades_variables))
+no_trim_set = list(itertools.product(no_trim, trues, filtering, bools, improv, bools,assembler, assembly_programs, spades_set, spades_variables, djur, test))
+fastp_trim_set = list(itertools.product(fastp_trim_qc, trues, filtering, bools, improv, bools, assembler, assembly_programs, spades_set, spades_variables, djur, test))
+trimmomatic_set = list(itertools.product(trimmomatic, trues, filtering, bools, improv, bools, assembler, assembly_programs, spades_set, spades_variables, djur, test))
 
 filter_list = []
-
 for element in filter_variables:
     filter_list.append(filter_set[0] + element)
 
@@ -112,6 +115,8 @@ for element in trimmomatic_list:
 concat_no_trim = no_trim_settings2 + no_trim_settings
 concat_fastp = fastp_settings2 + fastp_settings
 concat_trimmomatic = trimmomatic_settings2 + trimmomatic_settings
+
+
 
 for element in concat_no_trim:
       count = count + 1
