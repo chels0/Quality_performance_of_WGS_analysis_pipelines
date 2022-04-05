@@ -7,8 +7,8 @@ import pathlib
 
 list_of_directories = []
 
-directory = sys.argv[1]
-#directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/'
+#directory = sys.argv[1]
+directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/hu'
 
 
 #Define relevant columns to keep in dataframe
@@ -19,7 +19,8 @@ columns = ['# contigs', 'Largest contig', 'Total length', 'Reference length',
 
 
 for direct in os.listdir(directory):
-    filename_chew = directory + '/' + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
+    #filename_chew = directory + '/' + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
+    filename_chew = directory + '/' + direct
     #filename_chew = directory+direct+'/results_alleles.tsv'
     #filename_chew = direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
     

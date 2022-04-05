@@ -163,7 +163,6 @@ for char in characters:
 
 
 characters = ['T', 'F', 'N']
-combos = 
 for char in characters:
     for filename in all_lists:
         if char in filename:
