@@ -13,8 +13,8 @@ import itertools
 import pathlib
 import copy
 
-directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/'
-
+directory = '/Results/Comparisons/Chewbbaca_comparisons
+pathlib.Path('Results/Conclusions/').mkdir(parents=True, exist_ok=True)
 diff = '# Differences'
 corr = '# Corrections'
 wrong = '# Errors'
@@ -26,7 +26,7 @@ list_of_files1 = []
 list_of_files2 = []
 #append filenames into list_of_files
 
-for filename in os.listdir('/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/Comparisons/Chewbbaca_comparisons'):
+for filename in os.listdir(directory):
     split_files = filename.split('_')
     tupls = (split_files, filename)
     list_of_files.append(tupls)
@@ -48,7 +48,7 @@ word_count2 = []
 #characters = ['f', 'T', 'N', 'P', 'F']
 df_coverages = []
 
-characters = ['P']
+characters = ['P', 'f']
 for char in characters:
     for filename in all_lists:
         if char in filename:
@@ -98,7 +98,7 @@ for char in characters:
     for tuple_ in not_char:
         for value in list_of_files:
             if ((tuple_[0] == value[0][0] and tuple_[1] == value[0][2]) or (tuple_[0] == value[0][2] and tuple_[1] == value[0][0])):
-                df = pd.read_csv('/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/Comparisons/Chewbbaca_comparisons/'+value[1], index_col = 0, sep='\t')
+                df = pd.read_csv(directory+'/'+value[1], index_col = 0, sep='\t')
                 df.index = df.index.fillna('No label')
                 df_20x = df[df.index.str.contains('20x|No label', regex = True)]
                 df_50x = df[df.index.str.contains('50x|No label', regex = True)]
@@ -273,7 +273,7 @@ for char in characters:
     final_result = final_result.replace('nan', 0)
     final_result = final_result.fillna(0)
     final_result = final_result.astype(int)
-    final_result.to_csv('/mnt/bigdisk/'+char+'.tsv', sep='\t', encoding='utf-8')
+    final_result.to_csv('Results/Conclusions/'+char+'results.tsv', sep='\t', encoding='utf-8')
 
 #append letters from each column
                             # print(mask2)

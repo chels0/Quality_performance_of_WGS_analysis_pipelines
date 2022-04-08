@@ -12,7 +12,7 @@ import sys
 import os
 import pathlib
 
-directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables/'
+directory = '/Results/chewbbaca_quast_tables/'
 
 list_N50 = []
 
@@ -33,10 +33,10 @@ for cov in coverages:
         df_mean = pd.DataFrame(mean)
         empty_df = pd.concat([df_mean, empty_df]).sort_index()
 
-    test = empty_df['N50'].values - empty_df['N50'].values[:, None]
+    test = empty_df[stat].values - empty_df[stat].values[:, None]
     test_df = pd.DataFrame(test, columns = empty_df.index, index = empty_df.index)
     test_df.index.names = [cov]
-    test_df.to_csv('/mnt/bigdisk/'+ stat+'_'+cov+'_results.tsv', sep='\t', encoding='utf-8') #save to csv with name of run
+    test_df.to_csv('Results/Conclusions/'+ stat+'_'+cov+'_results.tsv', sep='\t', encoding='utf-8') #save to csv with name of run
 
 
 # test = []
