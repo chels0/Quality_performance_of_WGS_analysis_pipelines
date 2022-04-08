@@ -10,10 +10,10 @@ import numpy as np
 import sys
 import os
 
-directory = '/mnt/bigdisk/'
+directory = 'Results/Conclusions'
 
-df_T = pd.read_csv('/mnt/bigdisk/T.tsv' , header = [0,1],index_col = 0, sep='\t')
-df_F = pd.read_csv('/mnt/bigdisk/F.tsv' , header = [0,1], index_col = 0, sep='\t')
+df_T = pd.read_csv(directory+'/T_results.tsv' , header = [0,1],index_col = 0, sep='\t')
+df_F = pd.read_csv(directory+'/F_results.tsv' , header = [0,1], index_col = 0, sep='\t')
 
 df_T_index = []
 df_F_index = []
@@ -70,6 +70,6 @@ for i in range(len(df_T)):
     temp2 = pd.concat([temp2, test])
     
 temp2.index = temp2.index.str.replace('N', 'T')
-
+temp2.to_csv('Results/Conclusions/F+T_results.tsv', sep='\t', encoding='utf-8')
 
     

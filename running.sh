@@ -104,12 +104,19 @@ rm -r Results/Comparisons
 rm -r Results/chewbbaca_quast_tables
 rm -r ${outdir}/Comparisons
 rm -r ${outdir}/chewbbaca_quast_tables
+rm -r Results/Conclusions
+rm -r ${outdir}/Conclusions
 
 python3 scripts/chewbbaca_result.py ${outdir} 
 python3 scripts/reduce_chewbbaca.py
+python3 scripts/conclusion_script.py
+python3 scripts/conclusion_script_trimming.py 
+python3 scripts/conclusion_TvsF.py
+python3 scripts/N50.py
 
 mv Results/chewbbaca_quast_tables ${outdir}/.
 mv Results/Comparisons ${outdir}/.
+mv Results/Conclusions ${outdir}/.
 
 
 

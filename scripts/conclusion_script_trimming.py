@@ -12,7 +12,8 @@ import sys
 import os
 
 
-directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/'
+directory = '/Results/Comparisons/Chewbbaca_comparisons
+
 
 list_of_files = []
 list_of_files1 = []
@@ -28,7 +29,7 @@ wrong = '# Errors'
 change = '# Changes'
 
 
-for filename in os.listdir('/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/Comparisons/Chewbbaca_comparisons'):
+for filename in os.listdir(directory):
     split_files = filename.split('_')
     tupls = (split_files, filename)
     list_of_files.append(tupls)
@@ -60,7 +61,7 @@ characters = ['F', 'T']
 template = {diff: [], corr: [], wrong: [], change: []}
 list_of_things = [diff, corr, wrong, change]
 
-characters = ['F', 'T']
+
 for char in characters:
     list2 = []
     for element in list_:
@@ -202,25 +203,19 @@ for char in characters:
                         for words in word_count:
                             df_test[coverage, '% ' + words[0]] = words[1] + (df_test[coverage, '% ' + words[0]][0])
                         
-                        #for unique_value in uniques:
-                         #   df_test[coverage, '% Wrong-called'] = (df_test[coverage, wrong][0] - df_test[coverage, '% ' + unique_value])
+
                     
                     if word_count2 and not word_count:
                         for unique_value in uniques2:
                             df_test[coverage, '% ' + unique_value[0]] = 0
                         for words2 in word_count2:
                             df_test[coverage, '% ' + words2[0]] = words2[1] + (df_test[coverage, '% ' + words2[0]][0])
-                        #df_test[coverage, '% Wrong-called'] = (count_wrong - (words2[1] + df_test[coverage, '% ' + words2[0]][0]))
-                        #for unique_value in uniques2:
-                         #   df_test[coverage, '% Wrong-called'] = (df_test[coverage, wrong][0] - df_test[coverage, '% ' + unique_value[0]])                
+          
                             
                     if word_count2 and word_count:
                         for words in word_count2:
                             df_test[coverage, '% ' + words[0]] = (words[1] + df_test[coverage, words[0]][0])
-                        #df_test[coverage, '% Wrong-called'] = (count_wrong - (words[1] + df_test[coverage, words[0]][0]))
-                        #right_result = {diff : count_diffs, corr : count_right, wrong : count_wrong, change : count_change}
-                        #for unique_value in uniques3:
-                         #   df_test[coverage, '% Wrong-called'] = (df_test[coverage, wrong][0] - df_test[coverage, '% ' + unique_value[0]])
+
                     
                     for i in range(len(df_test)):
                         if df_test[coverage, wrong][i] != 0:
@@ -238,16 +233,7 @@ for char in characters:
                         
                         df_test[coverage, '% Wrong-called'] = wrong_called
                         
-                        
-                    #     to_subtract = value[0]
 
-                    #     wrong_called = df_test[coverage, wrong][0] - df_test[coverage, '% ' + to_subtract][0]
-                
-                    # wrong_called = wrong_called - df_test[coverage, '% ' + to_subtract][0]
-                        # #df_test[coverage, '% Wrong-called'] = df_test[coverage, wrong][0] - df_test[coverage, '% ' + to_subtract][0]
-                        # print(wrong_called)
-                    
-                        #right_result = {diff : count_diffs, corr : count_right, wrong : count_wrong, change : count_change}
                     if coverage == '20x':
                         df_20x_template= pd.concat([df_20x_template, df_test])
                     elif coverage == '50x':
@@ -260,4 +246,6 @@ for char in characters:
     final_result = final_result.replace('nan', 0)
     final_result = final_result.fillna(0)
     final_result = final_result.astype(int)
-    final_result.to_csv('/mnt/bigdisk/'+char+'.tsv', sep='\t', encoding='utf-8')
+    final_result.to_csv('Results/Conclusions/'+n_char+'+'char+'_results.tsv', sep='\t', encoding='utf-8')
+    
+    
