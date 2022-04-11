@@ -24,7 +24,8 @@ names_of_settings = ['\tfilter_set', '\tspades_set']
 name_of_settings_variables = [[' = 200\n', ' = 500\n' ], [' = --careful\n', ' = --isolate\n']]
 
 filter_set = ['\tfilter_set']
-filter_variables = [' = 200\n', ' = 500\n' ]
+#filter_variables = [' = 200\n', ' = 500\n' ]
+filter_variables = [' = 200\n']
 spades_set = ['\tspades_set']
 spades_variables = [' = --careful\n', ' = --isolate\n']
  

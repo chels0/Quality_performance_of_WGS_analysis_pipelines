@@ -139,7 +139,7 @@ process trimmomatic{
 	params.trimmomatic == true
 	
 	script:
-	if ( sampleID.contains(lab[0]) || sampleID.contains(lab[1]) || sampleID.contains(lab[2]) || sampleID.contains(lab[3]) )
+	if ( sampleID.contains(lab[0]) || sampleID.contains(lab[1]) )
 		adapters = adapter[1]
 	else
 		adapters = adapter[0]

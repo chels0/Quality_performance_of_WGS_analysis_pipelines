@@ -18,7 +18,7 @@ params{
 	fastp_set = ''
 	trimmomatic_set = 'LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36'
 	adapter = [ 'ILLUMINACLIP:/home/chelsea/miniconda3/envs/env_version1/share/trimmomatic/adapters/NexteraPE-PE.fa:2:30:10:2:true' , 'ILLUMINACLIP:/home/chelsea/miniconda3/envs/env_version1/share/trimmomatic/adapters/TruSeq3-PE-2.fa:2:30:10:2:true' ] 
-	not_used_first_adapter = [ 'PT28-1-20' , 'PT28-3-20', 'PT28-1-27', 'PT28-3-27' ]
+	not_used_first_adapter = ['PT28-1-27', 'PT28-3-27' ]
 	spades_set = '--isolate'
 	skesa_set = ''
 	filter_set = '200'
