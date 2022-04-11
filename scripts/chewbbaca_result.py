@@ -7,8 +7,8 @@ import pathlib
 
 list_of_directories = []
 
-#directory = sys.argv[1]
-directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/hu'
+directory = sys.argv[1]
+#directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/hu'
 
 
 #Define relevant columns to keep in dataframe
@@ -19,8 +19,8 @@ columns = ['# contigs', 'Largest contig', 'Total length', 'Reference length',
 
 
 for direct in os.listdir(directory):
-    #filename_chew = directory + '/' + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
-    filename_chew = directory + '/' + direct
+    filename_chew = directory + '/' + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
+    #filename_chew = directory + '/' + direct
     #filename_chew = directory+direct+'/results_alleles.tsv'
     #filename_chew = direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
     
@@ -48,7 +48,6 @@ for direct in os.listdir(directory):
     
     #Find all letter characters in each column and add column to list containing either character or nan
     mask = ([df[col].str.extract(('((?!^\d+$)^.+$)'), expand=False) for col in df])
-    
     #Append letter characters to list
     for element in mask:
         mask2 = element.dropna().drop_duplicates() #drop all nans and duplicates
@@ -57,7 +56,6 @@ for direct in os.listdir(directory):
     
     test = set(hej) #remove duplicate letters
     test = list(test) #create list of letters instead of set
-    
     count = list(range(10000, (len(test)+1)*10000, 10000)) #create list of ints ranging from 10000 to the length of letter list times 10000
     
     ko = list(zip(test, count)) #tuple letter character with an int from count

@@ -25,7 +25,7 @@ echo "your output directory is:" ${outdir} "cancel script if this is wrong"
 
 #Generate config files to be used in config_files folder
 #Generate config files to be used in config_files folder
-python3 scripts/automatisation_v2.py
+#python3 scripts/automatisation_v2.py
 
 #Add current path to txt file and add backslashes so it can be used with sed to automatically change path of the parameter_settings.txt file 
 pwd > path1.txt
@@ -107,13 +107,16 @@ rm -r ${outdir}/chewbbaca_quast_tables
 rm -r Results/Conclusions
 rm -r ${outdir}/Conclusions
 
-python3 scripts/chewbbaca_result.py ${outdir} 
+python3 scripts/chewbbaca_result.py ${outdir}
+mkdir Results/chewbbaca_quast_tables/placeholder 
+mv Results/chewbbaca_quast_tables/*_results.tsv Results/chewbbaca_quast_tables/placeholder/.
 python3 scripts/reduce_chewbbaca.py
 python3 scripts/conclusion_script.py
 python3 scripts/conclusion_script_trimming.py 
 python3 scripts/conclusion_TvsF.py
 python3 scripts/N50.py
-
+mv Results/chewbbaca_quast_tables/placeholder/* ..
+rm -r Results/chewbbaca_quast_tables/placeholder
 mv Results/chewbbaca_quast_tables ${outdir}/.
 mv Results/Comparisons ${outdir}/.
 mv Results/Conclusions ${outdir}/.
