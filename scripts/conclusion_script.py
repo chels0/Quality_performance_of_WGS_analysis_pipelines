@@ -13,7 +13,7 @@ import itertools
 import pathlib
 import copy
 
-directory = '/Results/Comparisons/Chewbbaca_comparisons
+directory = 'Results/Comparisons/Chewbbaca_comparisons'
 pathlib.Path('Results/Conclusions/').mkdir(parents=True, exist_ok=True)
 diff = '# Differences'
 corr = '# Corrections'
@@ -48,14 +48,17 @@ word_count2 = []
 #characters = ['f', 'T', 'N', 'P', 'F']
 df_coverages = []
 
-characters = ['P', 'f']
+characters = ['P','f']
 for char in characters:
+    if 'final_result' in locals():
+        del final_result
+    
+    files = []
     for filename in all_lists:
         if char in filename:
             files.append(filename)
 
     no_dup = list(set(files))
-    
     not_char = []
     
     for value in no_dup:
@@ -219,13 +222,13 @@ for char in characters:
                     uniques = list(set(word_count))
                     uniques2 = list(set(word_count2))
                     uniques3 = list(set(uniques + uniques2))
-                    print(word_count2)
+                  
                     if word_count:
                         for unique_value in uniques:
                             df_test[coverage, '% ' + unique_value[0]] = 0
                             
                         for words in word_count:
-                            df_test[coverage, '% ' + words[0]] = words[1] + (df_test[coverage, '% ' + words[0]][0])
+                            df_test[coverage, '% ' + words[0]] = (words[1] + (df_test[coverage, '% ' + words[0]][0]))
                         
                         #for unique_value in uniques:
                          #   df_test[coverage, '% Wrong-called'] = (df_test[coverage, wrong][0] - df_test[coverage, '% ' + unique_value])
@@ -234,15 +237,14 @@ for char in characters:
                         for unique_value in uniques2:
                             df_test[coverage, '% ' + unique_value[0]] = 0
                         for words2 in word_count2:
-                            df_test[coverage, '% ' + words2[0]] = words2[1] + (df_test[coverage, '% ' + words2[0]][0])
-                            print(words2)
+                            df_test[coverage, '% ' + words2[0]] = (words2[1] + (df_test[coverage, '% ' + words2[0]][0]))
                         #df_test[coverage, '% Wrong-called'] = (count_wrong - (words2[1] + df_test[coverage, '% ' + words2[0]][0]))
                         #for unique_value in uniques2:
                          #   df_test[coverage, '% Wrong-called'] = (df_test[coverage, wrong][0] - df_test[coverage, '% ' + unique_value[0]])                
                             
                     if word_count2 and word_count:
                         for words in word_count2:
-                            df_test[coverage, '% ' + words[0]] = (words[1] + df_test[coverage, words[0]][0])
+                            df_test[coverage, '% ' + words[0]] = ((words[1] + df_test[coverage, words[0]][0]))
                     
                     for i in range(len(df_test)):
                         if df_test[coverage, wrong][i] != 0:
@@ -258,8 +260,14 @@ for char in characters:
                         sum_ = sum(to_subtract_list)
                         wrong_called = column - sum_
                         
-                        df_test[coverage, '% Wrong-called'] = wrong_called
-                        
+                        df_test[coverage, '% Wrong-called'] = (wrong_called)
+                    
+                    for col in df_test:
+                        if '%' in col[1]:
+                            wrong_col = df_test[coverage, wrong][0]
+                            df_test[col] = df_test[col][0]*(100/wrong_col)
+                            
+                    
                     if coverage == '20x':
                         df_20x_template= pd.concat([df_20x_template, df_test], sort = False)
                     elif coverage == '50x':

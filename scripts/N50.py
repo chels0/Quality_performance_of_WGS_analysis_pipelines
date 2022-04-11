@@ -12,31 +12,42 @@ import sys
 import os
 import pathlib
 
-directory = '/Results/chewbbaca_quast_tables/'
+directory = 'Results/chewbbaca_quast_tables/placeholder/'
 
 list_N50 = []
 
-stat = 'N50'
+columns = ['# contigs', 'Largest contig', 'Total length', 
+               'Genome fraction (%)', 'GC (%)', 'N50', 'NG50', '# misassemblies']
 
-coverages = ['20x', '50x', '100x']
-empty_df = pd.DataFrame({})
-for cov in coverages:
+#columns = ['GC (%)']
+
+for col in columns:
+
+    coverages = ['20x', '50x', '100x']
     empty_df = pd.DataFrame({})
-    for filename in os.listdir(directory):
-        df = pd.read_csv(directory+filename, sep='\t', index_col=0) #create tab separated dataframe
-        df = df[['N50']]
-        df = df.iloc[1: , :]
-        mean = df[df.index.str.contains(cov)].mean()
-        index = filename.split('_')[0]
-        mean.index = [index]
-        mean = mean.rename(stat)
-        df_mean = pd.DataFrame(mean)
-        empty_df = pd.concat([df_mean, empty_df]).sort_index()
+    for cov in coverages:
+        empty_df = pd.DataFrame({})
+        for filename in os.listdir(directory):
+           df = pd.read_csv(directory+filename, sep='\t', index_col=0) #create tab separated dataframe
 
-    test = empty_df[stat].values - empty_df[stat].values[:, None]
-    test_df = pd.DataFrame(test, columns = empty_df.index, index = empty_df.index)
-    test_df.index.names = [cov]
-    test_df.to_csv('Results/Conclusions/'+ stat+'_'+cov+'_results.tsv', sep='\t', encoding='utf-8') #save to csv with name of run
+           df = df[[col]]
+           df = df.iloc[1: , :]
+           mean = df[df.index.str.contains(cov)].mean()
+           index = filename.split('_')[0]
+           mean.index = [index]
+           mean = mean.rename(col)
+           df_mean = pd.DataFrame(mean)
+           empty_df = pd.concat([df_mean, empty_df]).sort_index()
+
+        test = empty_df[col].values - empty_df[col].values[:, None]
+        test_df = pd.DataFrame(test, columns = empty_df.index, index = empty_df.index)
+        test_df.index.names = [cov]
+
+        if col != 'GC (%)' and col != 'Genome fraction (%)':
+            test_df = test_df.applymap(int)
+        else:
+            test_df = test_df.round(2)
+        test_df.to_csv('Results/Conclusions/'+ col+'_'+cov+'_results.tsv', sep='\t', encoding='utf-8') #save to csv with name of run
 
 
 # test = []

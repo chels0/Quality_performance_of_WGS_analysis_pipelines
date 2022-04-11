@@ -12,7 +12,7 @@ import sys
 import os
 
 
-directory = '/Results/Comparisons/Chewbbaca_comparisons
+directory = 'Results/Comparisons/Chewbbaca_comparisons'
 
 
 list_of_files = []
@@ -88,7 +88,7 @@ for char in characters:
     for tuple_ in list2:
         for value in list_of_files:
             if ((tuple_[0] == value[0][0] and tuple_[1] == value[0][2]) or (tuple_[0] == value[0][2] and tuple_[1] == value[0][0])):
-                df = pd.read_csv('/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/Comparisons/Chewbbaca_comparisons/'+value[1], index_col = 0, sep='\t')
+                df = pd.read_csv('Results/Comparisons/Chewbbaca_comparisons/'+value[1], index_col = 0, sep='\t')
                 df.index = df.index.fillna('No label')
                 df_20x = df[df.index.str.contains('20x|No label', regex = True)]
                 df_50x = df[df.index.str.contains('50x|No label', regex = True)]
@@ -121,7 +121,6 @@ for char in characters:
                     word_count = []
                     word_count2 = []
                                         
-                    print(coverage)
                     if n_char in dataframe.iloc[0,1]:
                         for i in range(len(test1)):
                             word_list = []
@@ -232,8 +231,15 @@ for char in characters:
                         wrong_called = column - sum_
                         
                         df_test[coverage, '% Wrong-called'] = wrong_called
-                        
-
+                   
+                    
+                    for col in df_test:
+                        if '%' in col[1]:
+                            wrong_col = df_test[coverage, wrong][0]
+                            df_test[col] = df_test[col][0]*(100/wrong_col)
+                            
+                         
+              
                     if coverage == '20x':
                         df_20x_template= pd.concat([df_20x_template, df_test])
                     elif coverage == '50x':
@@ -246,6 +252,6 @@ for char in characters:
     final_result = final_result.replace('nan', 0)
     final_result = final_result.fillna(0)
     final_result = final_result.astype(int)
-    final_result.to_csv('Results/Conclusions/'+n_char+'+'char+'_results.tsv', sep='\t', encoding='utf-8')
+    final_result.to_csv('Results/Conclusions/'+n_char+'+'+char+'_results.tsv', sep='\t', encoding='utf-8')
     
     
