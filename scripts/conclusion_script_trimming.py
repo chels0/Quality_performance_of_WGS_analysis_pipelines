@@ -12,8 +12,8 @@ import sys
 import os
 
 
-directory = 'Results/Comparisons/Chewbbaca_comparisons'
-
+#directory = 'Results/Comparisons/Chewbbaca_comparisons'
+directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/Comparisons/Chewbbaca_comparisons_test'
 
 list_of_files = []
 list_of_files1 = []
@@ -88,7 +88,7 @@ for char in characters:
     for tuple_ in list2:
         for value in list_of_files:
             if ((tuple_[0] == value[0][0] and tuple_[1] == value[0][2]) or (tuple_[0] == value[0][2] and tuple_[1] == value[0][0])):
-                df = pd.read_csv('Results/Comparisons/Chewbbaca_comparisons/'+value[1], index_col = 0, sep='\t')
+                df = pd.read_csv('/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/Comparisons/Chewbbaca_comparisons_test/'+value[1], index_col = 0, sep='\t')
                 df.index = df.index.fillna('No label')
                 df_20x = df[df.index.str.contains('20x|No label', regex = True)]
                 df_50x = df[df.index.str.contains('50x|No label', regex = True)]
@@ -141,14 +141,15 @@ for char in characters:
                             
                             
                             df_copy = dataframe.copy()
-                            df_copy[corr]  = np.where((dataframe[test1[i]] == '0') & (dataframe[test2[i]] != '0'), dataframe[test1[i]], np.nan)            
+                            df_copy[corr]  = np.where((dataframe[test1[i]] == '0') & (dataframe[test2[i]] != '0'), dataframe[test2[i]], np.nan)            
                             count_right = count_right + len(df_copy[corr].dropna())
                             df_copy = dataframe.copy()
-                            df_copy[change]  = np.where((dataframe[test1[i]] != '0') & (dataframe[test2[i]] != '0') & (dataframe[test1[i]] != dataframe[test2[i]]), dataframe[test1[i]], np.nan)            
-                            count_change = count_change + len(df_copy[change].dropna())
+                            
+                            df_copy[change]  = np.where((dataframe[test2[i]] != '0') & (dataframe[test1[i]] != '0') & (dataframe[test1[i]] != dataframe[test2[i]]), dataframe[test2[i]], np.nan)            
+                            count_change = count_change + len(df_copy.iloc[1:][change].dropna())
                             df_copy = dataframe.copy()
-                            df_copy[diff]  = np.where((dataframe[test1[i]] != dataframe[test2[i]]), dataframe[test1[i]], np.nan)            
-                            count_diffs = count_diffs + len(df_copy[diff].dropna())
+                            df_copy[diff]  = np.where((dataframe[test2[i]] != dataframe[test1[i]]), dataframe[test2[i]], np.nan)            
+                            count_diffs = count_diffs + len(df_copy.iloc[1:][diff].dropna()) 
                         
                     elif n_char in dataframe.iloc[0,0]:
                         for i in range(len(test1)):
@@ -175,7 +176,7 @@ for char in characters:
                             count_right = count_right + len(df_copy[corr].dropna())
                             df_copy = dataframe.copy()
                             
-                            df_copy[change]  = np.where((dataframe[test2[i]] != '0') & (dataframe[test1[i]] == '0') & (dataframe[test1[i]] != dataframe[test2[i]]), dataframe[test2[i]], np.nan)            
+                            df_copy[change]  = np.where((dataframe[test2[i]] != '0') & (dataframe[test1[i]] != '0') & (dataframe[test1[i]] != dataframe[test2[i]]), dataframe[test2[i]], np.nan)            
                             count_change = count_change + len(df_copy.iloc[1:][change].dropna())
                             df_copy = dataframe.copy()
                             df_copy[diff]  = np.where((dataframe[test2[i]] != dataframe[test1[i]]), dataframe[test2[i]], np.nan)            
