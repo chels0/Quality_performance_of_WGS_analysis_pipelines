@@ -1,0 +1,24 @@
+name: env_version1
+
+channels:
+  - conda-forge
+  - bioconda
+
+dependencies:
+  - python=3.6
+  - fastqc=0.11.8
+  - spades=3.15.2
+  - quast=5.0.2
+  - pilon=1.24
+  - trimmomatic=0.39
+  - multiqc=1.11
+  - fastp=0.23.2
+  - skesa=2.4.0
+  - bowtie2=2.4.5
+  - samtools=1.14
+  - pandas=0.25.3
+  - rasusa=0.6.1
+  - chewbbaca=2.0.16
+  - biopython=1.72
+  - blast=2.9.0
+  - prodigal=2.6.3
