@@ -29,10 +29,9 @@ spades_set = ['\tspades_set']
 spades_variables = [' = --careful\n', ' = --isolate\n']
  
 
-dic = { 'setting' : filter_set, 'variables' : filter_variables, 'dependency' : filtering[0]+falses[0]}
-spades_dic = { 'setting' : 'bajs' }
+dic = { 'setting' : filter_set, 'variables' : filter_variables, 'dependency' : filtering[0]+trues[0]}
 
-
+spades_dic = { 'setting' : spades_set, 'variables' : spades_variables, 'dependency' : assembler[0]+assembly_programs[1] }
 
 filter_list = []
 for element in filter_variables:
@@ -43,16 +42,27 @@ spades_list = []
 for element in spades_variables:
     spades_list.append(spades_set[0] + element)
 
-comb = list(itertools.product(no_trim, trues, filtering, bools, improv, bools, assembler, assembly_programs))
 var_comb = list(itertools.product(filter_list, spades_list))
 # Create all combinations of parameters when no trimming is chosen
 no_trim_set = list(itertools.product(no_trim, trues, filtering, bools, improv, bools, assembler, assembly_programs, filter_set, filter_variables))
 
+testtt = list(itertools.product(no_trim, trues, filtering, bools, improv, bools,assembler, assembly_programs))
+testtt2 = list(itertools.product(filter_set, filter_variables, spades_set, spades_variables))
+no_trim_set = list(itertools.product(testtt, testtt2))
+
 #Create all combinations of parameters when fastp trimming is chosen
 fastp_trim_set = list(itertools.product(fastp_trim_qc, trues, filtering, bools, improv, bools, assembler, assembly_programs, filter_set, filter_variables))
 
+testtt = list(itertools.product(fastp_trim_qc, trues, filtering, bools, improv, bools,assembler, assembly_programs))
+testtt2 = list(itertools.product(filter_set, filter_variables, spades_set, spades_variables))
+fastp_set = list(itertools.product(testtt, testtt2))
+
 #Create all combinations of parameters when trimmomatic is chosen
 trimmomatic_set = list(itertools.product(trimmomatic, trues, filtering, bools, improv, bools, assembler, assembly_programs, filter_set, filter_variables))
+
+testtt = list(itertools.product(trimmomatic, trues, filtering, bools, improv, bools,assembler, assembly_programs))
+testtt2 = list(itertools.product(filter_set, filter_variables, spades_set, spades_variables))
+trimmomatic_set = list(itertools.product(testtt, testtt2))
 
 #Define empty lists to put results in
 no_trim_settings = []
@@ -105,9 +115,18 @@ for i in range(len(no_trim_settings)):
     fastp_settings[i][0:length] = [''.join(fastp_settings[i][0:length])]
     trimmomatic_settings[i][0:length] = [''.join(trimmomatic_settings[i][0:length])]
 
-    if filter_cont in no_trim_settings[i][0]:
-        for val in filter_list:
-            no_trim_settings[i][0]=no_trim_settings[i][0].replace(val, '')
+    for val in filter_list:
+        if filter_cont in no_trim_settings[i][0] and val in no_trim_settings[i][0] :
+            no_trim_settings[i][0] = no_trim_settings[i][0].replace(val, '')
+            #no_trim_settings[i][0]=no_trim_settings[i][0].replace(val, '')
+    
+    #for val in 
+    
+    no_trim_settings2.append(no_trim_settings[i][0])
+    
+    
+    
+no_trimmm = list(set(no_trim_settings2))
 
 
 #Create a config file for each list in no_trim_settings     

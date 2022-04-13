@@ -176,10 +176,10 @@ for char in characters:
                             df_copy = dataframe.copy()
                             
                             df_copy[change]  = np.where((dataframe[test2[i]] != '0') & (dataframe[test1[i]] == '0') & (dataframe[test1[i]] != dataframe[test2[i]]), dataframe[test2[i]], np.nan)            
-                            count_change = count_change + len(df_copy[change].dropna())
+                            count_change = count_change + len(df_copy.iloc[1:][change].dropna())
                             df_copy = dataframe.copy()
                             df_copy[diff]  = np.where((dataframe[test2[i]] != dataframe[test1[i]]), dataframe[test2[i]], np.nan)            
-                            count_diffs = count_diffs + len(df_copy[diff].dropna())   
+                            count_diffs = count_diffs + len(df_copy.iloc[1:][diff].dropna())   
                 
                     if n_char in tuple_[0]:
                         n_char_name = tuple_[0]

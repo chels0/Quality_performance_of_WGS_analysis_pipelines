@@ -14,6 +14,8 @@ import pathlib
 import copy
 
 directory = 'Results/Comparisons/Chewbbaca_comparisons'
+#directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/Comparisons/Chewbbaca_comparisons_test'
+
 pathlib.Path('Results/Conclusions/').mkdir(parents=True, exist_ok=True)
 diff = '# Differences'
 corr = '# Corrections'
@@ -48,7 +50,7 @@ word_count2 = []
 #characters = ['f', 'T', 'N', 'P', 'F']
 df_coverages = []
 
-characters = ['P','f']
+characters = ['P']
 for char in characters:
     if 'final_result' in locals():
         del final_result
@@ -154,7 +156,7 @@ for char in characters:
                                 word_count.append((words, counter))
                             df_copy = dataframe.copy()
                             df_copy[diff]  = np.where((dataframe[test1[i]] != dataframe[test2[i]]), dataframe[test1[i]], np.nan)            
-                            count_diffs = count_diffs + len(df_copy[diff].dropna())
+                            count_diffs = count_diffs + len(df_copy.iloc[1:][diff].dropna())
                             
                             df_copy = dataframe.copy()
                             df_copy[corr]  = np.where((dataframe[test1[i]] == '0') & (dataframe[test2[i]] != '0'), dataframe[test1[i]], np.nan)            
@@ -179,7 +181,7 @@ for char in characters:
                     #         count_wrong = count_wrong + len(df_copy[wrong].dropna())
                             df_copy = dataframe.copy()
                             df_copy[change]  = np.where((dataframe[test1[i]] != '0') & (dataframe[test2[i]] != '0') & (dataframe[test1[i]] != dataframe[test2[i]]), dataframe[test1[i]], np.nan)            
-                            count_change = count_change + len(df_copy[change].dropna())
+                            count_change = count_change + len(df_copy.iloc[1:][change].dropna())
                             
                     
                     if char in dataframe.iloc[0,1]:
@@ -202,16 +204,15 @@ for char in characters:
                             
                             df_copy = dataframe.copy()
                             df_copy[diff]  = np.where((dataframe[test2[i]] != dataframe[test1[i]]), dataframe[test2[i]], np.nan)            
-                            skesa_files.append(df_copy[diff])
-                            count_diffs = count_diffs + len(df_copy[diff].dropna())
+                            count_diffs = count_diffs + len(df_copy.iloc[1:][diff].dropna())
                             
                             df_copy = dataframe.copy()
                             df_copy[corr]  = np.where((dataframe[test2[i]] == '0') & (dataframe[test1[i]] != '0'), dataframe[test2[i]], np.nan)            
                             count_right = count_right + len(df_copy[corr].dropna())
                             
                             df_copy = dataframe.copy()
-                            df_copy[change]  = np.where((dataframe[test2[i]] != '0') & (dataframe[test1[i]] == '0') & (dataframe[test1[i]] != dataframe[test2[i]]), dataframe[test2[i]], np.nan)            
-                            count_change = count_change + len(df_copy[change].dropna())
+                            df_copy[change]  = np.where((dataframe[test2[i]] != '0') & (dataframe[test1[i]] != '0') & (dataframe[test1[i]] != dataframe[test2[i]]), dataframe[test2[i]], np.nan)            
+                            count_change = count_change + len(df_copy.iloc[1:][change].dropna())
                                
                             
                     pilon = tuple_[0]
