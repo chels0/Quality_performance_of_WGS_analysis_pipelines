@@ -32,17 +32,17 @@ spades_variables = [' = --careful\n', ' = --isolate\n']
 dependant_variables = [(filtering[0]+falses[0], filter_set[0]) , (assembler[0]+assembly_programs[0], spades_set[0])]
 
 #Create all possible combinations when no trimming
-testtt = list(itertools.product(no_trim, trues, filtering, bools, improv, bools,assembler, assembly_programs))
+testtt = list(itertools.product(no_trim, trues, fastp_trim_qc, falses, trimmomatic, falses, filtering, bools, improv, bools,assembler, assembly_programs))
 testtt2 = list(itertools.product(filter_set, filter_variables, spades_set, spades_variables))
 no_trim_set = list(itertools.product(testtt, testtt2))
 
 
 #Create all combinations of parameters when fastp trimming is chosen
-testtt = list(itertools.product(fastp_trim_qc, trues, filtering, bools, improv, bools,assembler, assembly_programs))
+testtt = list(itertools.product(fastp_trim_qc, trues, no_trim, falses, trimmomatic, falses, filtering, bools, improv, bools,assembler, assembly_programs))
 fastp_set = list(itertools.product(testtt, testtt2))
 
 #Create all combinations of parameters when trimmomatic is chosen
-testtt = list(itertools.product(trimmomatic, trues, filtering, bools, improv, bools,assembler, assembly_programs))
+testtt = list(itertools.product(trimmomatic, trues, no_trim, falses, fastp_trim_qc, falses, filtering, bools, improv, bools,assembler, assembly_programs))
 trimmomatic_set = list(itertools.product(testtt, testtt2))
 
 #List with all the software
