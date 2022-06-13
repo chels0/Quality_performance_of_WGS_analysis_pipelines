@@ -14,14 +14,9 @@ import itertools
 import pathlib
 import copy
 
-#name of directory
-#directory = sys.argv[1]
-#directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results'
 
 list_of_files = []
-
 #append filenames into list_of_files
-
 for filename in os.listdir('Results/chewbbaca_quast_tables/placeholder/'):
     list_of_files.append(filename.split('_')[0]) #split on . to separate filename from file extension
 
@@ -31,31 +26,32 @@ string_lengths = []
 first_letters = []
 
 for strings in list_of_files:
-    first_letters.append(strings[0])
-    length = len(strings)
-    string_lengths.append(length)
+    first_letters.append(strings[0]) #Append first character of filenames
+    length = len(strings) #Length of each filename
+    string_lengths.append(length) #Append lengths
     if 'Ske' in strings:
-        skesa.append(strings)
+        skesa.append(strings) #append SKESA assemblies into list skesa
     elif 'Sp' in strings:
-        spades.append(strings)
+        spades.append(strings) #append SPAdes assemblies into list skesa
 
-skesa_char = skesa[0][1:4]
-spades_char = spades[0][1:3]
-spades_set = spades[0][3:4]
+#skesa_char = skesa[0][1:4] #character denotation for SKESA
+spades_char = spades[0][1:3] #character denotation for SPAdes
+spades_set = spades[0][3:4] #SPAdes setting denotation
 
-unique_letters = list(set(first_letters))
-length_of_letters = len(unique_letters)
-
+unique_letters = list(set(first_letters)) #remove duplicate first characters
+length_of_letters = len(unique_letters) #length of list
 unique_lengths = list(set(string_lengths))
 length_of_lengths = len(unique_lengths)
+
+#Create empty lists based on how many values are in lists
 spades_lists = [[] for _ in range(length_of_lengths)]
 skesa_lists = [[] for _ in range(length_of_lengths)]
-
 spades_same = [[] for _ in range(length_of_letters)]
 skesa_same = [[] for _ in range(length_of_letters)]
 
-count = 0
+count = 0 #counter
 
+#Append filenames for SKESA and SPAdes in lists
 for length in unique_lengths:
     if count == 0:
         for strings in spades:
@@ -240,27 +236,5 @@ for files in combos2:
     pathlib.Path('Results/Comparisons/Quast+Chewbbaca_comparisons/').mkdir(parents=True, exist_ok=True)
     comp.to_csv('Results/Comparisons/Quast+Chewbbaca_comparisons/'+ filename3[0]+'_vs_'+filename4[0]+'.tsv', sep='\t', encoding='utf-8')
 
-
-# #test3 = pd.concat([df_quast, df2_quast], keys=[filename, filename2], axis=1, sort=False)
-
-# cols = list(test3.columns.values)
-# length_of_cols = len(cols)
-
-# half_cols = cols[0:int(len(cols)/2)]
-# other_half = cols[int(len(cols)/2):len(cols)]
-
-# columns = []
-
-# for i in range(len(half_cols)):
-#     columns.append(half_cols[i])
-#     columns.append(other_half[i])
-
-# test4 = test3[columns]
-
-#test4.to_csv(filename3[0]+'_vs_'+filename4[0]+'_quast.tsv', sep='\t', encoding='utf-8')
-
-#merged = pd.merge(test4,test2,left_index= True, right_index=True, how="outer")
-
-#merged.to_csv(filename3[0]+'_vs_'+filename4[0]+'_results.tsv', sep='\t', encoding='utf-8')
 
 
