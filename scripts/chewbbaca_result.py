@@ -5,7 +5,12 @@ import sys
 import os
 import pathlib
 
-list_of_directories = []
+
+#Script for comparing the reference genome's allele calling results to the assemblies' allele calling results.
+#The script subtracts the reference's type for each loci from all the assemblies' loci. 
+#Thus the reference will have a row of zeroes representing a correct result
+#Assemblies with a type of 0 at loci is a correct allele calling
+
 
 directory = sys.argv[1]
 #directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/hu'
@@ -16,18 +21,12 @@ columns = ['# contigs', 'Largest contig', 'Total length', 'Reference length',
                'Genome fraction (%)', 'GC (%)', 'Reference GC (%)', 'N50', 'NG50', '# misassemblies',
                '# mismatches per 100 kbp']
 
-
-
+#Loop through all files in cgMLST result
 for direct in os.listdir(directory):
     filename_chew = directory + '/' + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
-    #filename_chew = directory + '/' + direct
-    #filename_chew = directory+direct+'/results_alleles.tsv'
-    #filename_chew = direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
-    
 
     #filename_chew = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/alleles/results_alleles1.tsv'
-    
-    #filename_chew = sys.argv[1] #filename for chewbbaca result
+   
     df = pd.read_csv(filename_chew, sep='\t', index_col=0) #create tab separated dataframe
     df = df.applymap(str) #change dataframe to string
     
@@ -43,8 +42,7 @@ for direct in os.listdir(directory):
     
     reference = df.iloc[[0],:] #get reference row, the first row of dataframe with all its columns
     reference = reference[[]] #empty the reference row
-    tom = []
-    hej = []
+    string_errors = []
     
     #Find all letter characters in each column and add column to list containing either character or nan
     mask = ([df[col].str.extract(('((?!^\d+$)^.+$)'), expand=False) for col in df])
@@ -52,16 +50,17 @@ for direct in os.listdir(directory):
     for element in mask:
         mask2 = element.dropna().drop_duplicates() #drop all nans and duplicates
         for col in mask2:
-            hej.append(col) #append letters from each column
+            string_errors.append(col) #append letters from each column
+  
     
-    test = set(hej) #remove duplicate letters
-    test = list(test) #create list of letters instead of set
-    count = list(range(10000, (len(test)+1)*10000, 10000)) #create list of ints ranging from 10000 to the length of letter list times 10000
+    string_errors_no_dup = set(string_errors) #remove duplicate letters
+    string_errors_no_dup = list(string_errors_no_dup) #create list of letters instead of set
+    count = list(range(10000, (len(string_errors_no_dup)+1)*10000, 10000)) #create list of ints ranging from 10000 to the length of letter list times 10000
     
-    ko = list(zip(test, count)) #tuple letter character with an int from count
+    string_error_int_tuple = list(zip(string_errors_no_dup, count)) #Give each string error an int ID from count 
     
-    #Replace all letter characters in dataframe with ints
-    for values in ko:
+    #Replace all string errors in dataframe with their IDs in order to be able to perform subtractions on entire dataframe
+    for values in string_error_int_tuple:
         df = df.replace(values[0], values[1], regex=True)
     
     df = df.applymap(int) #convert dataframe to int
@@ -70,33 +69,38 @@ for direct in os.listdir(directory):
     
     empty = []
     pathlib.Path("Results/chewbbaca_quast_tables").mkdir(parents=True, exist_ok=True)
-    #Compare each row in dataframe to reference row and calculate difference
+    
+    #Compare each row in dataframe to reference row and calculate difference. Also count how many loci differ from reference
     for i in range(len(df)):
         nextt = df.iloc[[0,i],:] #row to be compared to reference along with reference
-        ref = nextt.iloc[[0]].reset_index()
-        ref.drop('Sample', axis=1, inplace=True)
-        to_change = nextt.iloc[[1]]
-        ref.insert(0, 'Sample', to_change.index)
-        ref.set_index('Sample', inplace = True)
-        comp = ref.compare(to_change, align_axis=1).rename(columns={'self': 'Reference', 'other': to_change.index[0]}, level=-1)
-        colu = comp.columns.get_level_values(0)
-        colu = colu[~colu.duplicated()]
+	#Count how many loci differ from reference at each row
+        ref = nextt.iloc[[0]].reset_index() #reference without index
+        ref.drop('Sample', axis=1, inplace=True) #remove sample column from reference
+        to_change = nextt.iloc[[1]] #row to be compared to reference
+        ref.insert(0, 'Sample', to_change.index) #insert new sample column with index of row to be compared to reference
+        ref.set_index('Sample', inplace = True) # set sample as index
+        comp = ref.compare(to_change, align_axis=1).rename(columns={'self': 'Reference', 'other': to_change.index[0]}, level=-1) #compare row and reference 
+        colu = comp.columns.get_level_values(0) #extract how many differences at each loci (column) for that row
+        colu = colu[~colu.duplicated()] #remove duplicates
+        
+        #print how many different columns there are compared to reference in txt file
         with open('Results/chewbbaca_quast_tables/'+direct+'_samples.txt', 'a') as file2:
             file2.write("%s" % to_change.index[0] + '\t' + str(len(colu)) + '\t')
             file2.writelines(colu + ' ')
             file2.write('\n')
+        
+        #subtract reference value from each row one at the time
         nextt = nextt.diff() #calculate difference between rows
         to_change = nextt.iloc[[1],:] #extract row compared to reference
-        bajs = to_change #set variable as row
-        to_compare = pd.concat([to_compare, bajs]) #append row to to_compare
+        subtracted_row = to_change #set variable as row
+        to_compare = pd.concat([to_compare, subtracted_row]) #append row to to_compare
     
     #Convert ints back to their letter characters
     for col in to_compare:
         to_compare[col] =to_compare[col].astype(int) #had to set as int because diff function outputs floats
-        for values in ko:
-            cond = (df[col]<= values[1]) & (df[col]> (values[1]-2000)) #set condition if value in dataframe is same int as letter blabla
-            to_compare.loc[cond, col] = values[0] #replace int with proper letter character
-    
+        for values in string_error_int_tuple:
+            cond = (df[col]<= values[1]) & (df[col]> (values[1]-2000)) #set condition if value in dataframe is in range of a string errors ID
+            to_compare.loc[cond, col] = values[0] #replace int with proper string error
         
     to_compare = to_compare[~to_compare.index.duplicated(keep='last')] #remove duplicate reference row
     
@@ -117,9 +121,9 @@ for direct in os.listdir(directory):
     df3 = df3.applymap(str) #turn dataframe to string
     
     #MERGER
-    kuk = pd.merge(df3, to_compare, how ="right", left_index= True, right_index = True) #merge two dataframes 
-    kuk.fillna('', inplace=True) #fill nans with empty string
-    kuk.replace('nan', '', inplace=True) #replace string nan with empty string
+    df_quast_chew = pd.merge(df3, to_compare, how ="right", left_index= True, right_index = True) #merge two dataframes 
+    df_quast_chew.fillna('', inplace=True) #fill nans with empty string
+    df_quast_chew.replace('nan', '', inplace=True) #replace string nan with empty string
     name_of_run = df.index[1] #sample name
     name = name_of_run.split('x_') #split sample name
     #name_of_run = name_of_run.split('_contigs')
@@ -128,27 +132,7 @@ for direct in os.listdir(directory):
     #    name_of_run = name_of_run[0].split('_scaffolds')
    
     
-    kuk.to_csv('Results/chewbbaca_quast_tables/'+ direct+'_results.tsv', sep='\t', encoding='utf-8') #save to csv with name of run
+    df_quast_chew.to_csv('Results/chewbbaca_quast_tables/'+ direct+'_results.tsv', sep='\t', encoding='utf-8') #save to csv with name of run
     columns_with_no_diff.to_csv('Results/chewbbaca_quast_tables/'+ direct+'_common_columns.tsv', sep='\t', encoding='utf-8') #save to csv with name of run
 
-# for index, row in df.iterrows():
-#     hej.append(row[0])
-#     print(row[0])
-
-
-# for col in df:
-#     hejda = df[col].value_counts()
-#     maximum = hejda.max()
-#     test2 = hejda[hejda < maximum]
-#     new = test2.index
-#     hej.append(test2)
-    
-# bajs = []
-# piss = []
-# for element in hej:
-#     grej = element.reset_index()
-#     for kuk in element:
-#         bajs.append(kuk)
-#     bajs = []
-#     piss.append(bajs)
     
