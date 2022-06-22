@@ -12,8 +12,8 @@ import itertools
 import pathlib
 
 
-#directory = 'Results/Comparisons/Chewbbaca_comparisons'
-directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/Comparisons/Chewbbaca_comparisons/'
+directory = 'Results/Comparisons/Chewbbaca_comparisons'
+#directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/Comparisons/Chewbbaca_comparisons/'
 
 pathlib.Path('Results/Conclusions/').mkdir(parents=True, exist_ok=True) #Create path if non existant
 
@@ -44,7 +44,7 @@ word_count2 = []
 df_coverages = []
 
 characters = ['P','500f','500fP', '200f', '200fP'] #post improvement characters
-characters = ['500f']
+
 #for each post improvement, count the number of differences observed between using the post assembly improvement and not using it, and output in a table for each software combination
 for char in characters:
     if 'final_result' in locals():

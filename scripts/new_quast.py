@@ -16,13 +16,17 @@ import seaborn as sns
 #Script for plotting QUAST metrics, one boxplot for each metric at different coverages
 #_____________________________________________________________________________________
 
-directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables/placeholder/'
+directory = 'Results/chewbbaca_quast_tables/placeholder/'
 
 #Define which assemblers have been used
-assembler_1 = 'SpC'
+assembler_1 = sys.argv[1]
 assembler_2 = 'SpI'
 #Define what name should be plotted
-assembler_1_full = 'SPAdes --careful'
+
+if assembler_1 == 'Ske' or assemblier_1 == 'Skesa' or assembler_1 == 'skesa':
+    assembler_1_full = 'Skesa'
+if assembler_1 == 'SpC' or assembler_1 == 'SPAdes --careful' or assembler_1 == '--careful':
+    assembler_1_full = 'SPAdes --careful'
 assembler_2_full = 'SPAdes --isolate'
 
 

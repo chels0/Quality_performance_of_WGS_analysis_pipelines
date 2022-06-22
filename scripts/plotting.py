@@ -12,7 +12,7 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/Conclusions'
+directory = 'Results/Conclusions'
 
 #Define column names
 diff = '# Differences'
@@ -23,9 +23,9 @@ change = '# Changes'
 list_ = ['Trimming', 'Pilon', 'Filtering 200', 'Pilon and Filtering'] #list of plots to be created
 coverages = ['20x', '50x', '100x']
 
-#list_index = sys.argv[1]
-#to_plot = list_[int(list_index)] #choose which plot to plot
-to_plot = list_[3]
+list_index = sys.argv[1]
+to_plot = list_[int(list_index)] #choose which plot to plot
+#to_plot = list_[3]
 if to_plot != list_[0]:
     x_axis_label = 'Compared pipelines'
 else:
@@ -35,10 +35,14 @@ else:
 df_NT = pd.read_csv(directory+'/'+'N+T_results.tsv', index_col = 0, sep='\t', header=[0,1]) #create dataframe of no trimming vs trimming chewbbaca results
 df_NF = pd.read_csv(directory+'/'+'N+F_results.tsv', index_col = 0, sep='\t', header=[0,1]) #create datafrmae of no trimming vs Fastp
 df_P = pd.read_csv(directory+'/Presults.tsv', index_col= 0, sep='\t', header=[0,1]) #create dataframe of pilon vs no pilon
-df_f = pd.read_csv(directory+'/500fresults.tsv', index_col= 0, sep='\t', header=[0,1]) #create dataframe of filtering vs no filterin
+df_f = pd.read_csv(directory+'/200fresults.tsv', index_col= 0, sep='\t', header=[0,1]) #create dataframe of filtering vs no filterin
 
-to_compare_to_isolate = 'Ske' #assembler to compare to --isolate
-assembler_not_isolate = 'SKESA' #full name
+to_compare_to_isolate = sys.argv[2] #assembler to compare to --isolate
+if to_compare_to_isolate == 'Ske':
+    assembler_not_isolate = 'SKESA'
+if to_compare_to_isolate == 'SpC':
+    assembler_not_isolate = 'SPAdes --careful'
+
 to_remove_from_trimming= ['P', '500f', '200f'] #
 to_remove_P = ['500f', '200f']
 to_remove_f = ['P']

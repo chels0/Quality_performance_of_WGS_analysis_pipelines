@@ -1,0 +1,8 @@
+
+name: python_env_version1
+
+channels:
+  - conda-forge
+  - bioconda
+
+dependencies: - python=3.9 - pandas=1.4.1 - matplotlib=3.

@@ -14,9 +14,9 @@ import pathlib
 import copy
 
 #name of directory
-directory = sys.argv[1]
+#directory = sys.argv[1]
 #directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables/placeholder/'
-#directory = 'Results/chewbbaca_quast_tables/placeholder/'
+directory = 'Results/chewbbaca_quast_tables/placeholder/'
 
 list_of_files = []
 
@@ -32,8 +32,8 @@ assembler_1 = [] #list in which filesnames assembled with second assembler are c
 string_lengths = [] #list in which length of filenames are contained
 first_letters = [] #list of the first characters of filenames are contained, aka trimming options
 
-assembler_1_char = sys.argv[2]
-assembler_2_char = sys.argv[3]
+assembler_1_char = sys.argv[1]
+assembler_2_char = sys.argv[2]
 
 #assembler_1_char = 'SpC'
 #assembler_2_char = 'SpI'

@@ -25,9 +25,11 @@ falses = [' = false\n']
 
 #Put your own dependant variables here
 filter_set = ['\tfilter_set']
-filter_variables = [' = 200\n', ' = 500\n' ]
+#filter_variables = [' = 200\n']
+filter_variables = [' = 200\n' ]
 spades_set = ['\tspades_set']
-spades_variables = [' = --careful\n', ' = --isolate\n']
+#spades_variables = [" = '--careful'\n", " = '--isolate'\n"]
+spades_variables = [" = '--isolate'\n"]
 
 #Put them in a list here with the negative dependancy
 dependant_variables = [(filtering[0]+falses[0], filter_set[0]) , (assembler[0]+assembly_programs[0], spades_set[0])]

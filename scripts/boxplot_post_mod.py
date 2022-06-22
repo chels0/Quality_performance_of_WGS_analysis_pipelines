@@ -17,7 +17,7 @@ import seaborn as sns
 #Script for plotting QUAST metrics, one boxplot for each metric at different coverages
 #_____________________________________________________________________________________
 
-directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables/placeholder/'
+directory = 'Results/chewbbaca_quast_tables/placeholder/'
 
 assembler_comp = sys.argv[1]
 #assembler_comp = 'Ske'
