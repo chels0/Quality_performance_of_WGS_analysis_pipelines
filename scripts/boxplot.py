@@ -154,7 +154,6 @@ for col in columns:
             
         if count == 9: #if statement to print legend on only the 100x figure
             plt.figure()
-            plt.ylim(y_axis_min-(y_axis_min/20), y_axis_max+(y_axis_max/20))
             sns.set_theme()
             sns.set(rc={"figure.figsize":(7, 5), "figure.dpi":300, 'savefig.dpi':300})
             ax = sns.boxplot(data=concated, x='assembler', y=col, hue='Trimming software', palette="vlag")
@@ -165,7 +164,6 @@ for col in columns:
         
         else:
             plt.figure()
-            plt.ylim(y_axis_min-(y_axis_min/20), y_axis_max+(y_axis_max/20))
             sns.set_theme()
             sns.set(rc={"figure.figsize":(7, 5), "figure.dpi":300, 'savefig.dpi':300})
             ax = sns.boxplot(data=concated, x='assembler', y=col, hue='Trimming software', palette="vlag").set(title=cov)
@@ -175,6 +173,6 @@ for col in columns:
             plt.legend([],[], frameon=False)
             plt.tight_layout()
 
-        plt.savefig('Results/Conclusions/quast_plots_seaborn/'+trimming_software+'_'+col+'_'+cov+'_.png', bbox_inches="tight")
+        plt.savefig('Results/Conclusions/'+trimming_software+'_'+col+'_'+cov+'_.png', bbox_inches="tight")
         
         

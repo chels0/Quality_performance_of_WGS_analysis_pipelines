@@ -169,7 +169,7 @@ for col in columns:
             plt.legend([],[], frameon=False)
             plt.tight_layout()
 
-        plt.savefig('Results/Conclusions/quast_plots_seaborn/'+full_name_software+'_'+col+'_'+cov+'_.png', bbox_inches="tight")
+        plt.savefig('Results/Conclusions/'+full_name_software+'_'+col+'_'+cov+'_.png', bbox_inches="tight")
         
         
         

@@ -35,7 +35,7 @@ else:
 df_NT = pd.read_csv(directory+'/'+'N+T_results.tsv', index_col = 0, sep='\t', header=[0,1]) #create dataframe of no trimming vs trimming chewbbaca results
 df_NF = pd.read_csv(directory+'/'+'N+F_results.tsv', index_col = 0, sep='\t', header=[0,1]) #create datafrmae of no trimming vs Fastp
 df_P = pd.read_csv(directory+'/Presults.tsv', index_col= 0, sep='\t', header=[0,1]) #create dataframe of pilon vs no pilon
-df_f = pd.read_csv(directory+'/200fresults.tsv', index_col= 0, sep='\t', header=[0,1]) #create dataframe of filtering vs no filterin
+df_f = pd.read_csv(directory+'/500fresults.tsv', index_col= 0, sep='\t', header=[0,1]) #create dataframe of filtering vs no filterin
 
 to_compare_to_isolate = sys.argv[2] #assembler to compare to --isolate
 if to_compare_to_isolate == 'Ske':
@@ -49,9 +49,9 @@ to_remove_f = ['P']
 
 df_fP = pd.concat([df_P, df_f]) #create a filtering pilon dataframe
 #df_fP = df_fP[df_fP.index.str.contains('500fP')]
-df_fP = df_fP.astype(int)
-df_fP = df_fP[df_fP.index.str.contains('200fP')] #extract only Fp
 
+df_fP = df_fP[df_fP.index.str.contains('500fP')] #extract only Fp
+df_fP = df_fP.astype(int)
 concated = pd.concat([df_NT, df_NF]) #concatenate the trimming dataframes
 
 #keep only columns without string errors
