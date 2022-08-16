@@ -10,7 +10,7 @@ profiles{
 
 
 params{
-	path_to_reads = './Raw_data/test_set/*{R1,R2}.fastq.gz'
+	path_to_reads = './Raw_data/Samples/*{R1,R2}.fastq.gz'
 	path_to_reference = 'PATHS/Raw_data/jejuni*'
 	path_to_scripts = 'PATHS/scripts'
 	spades_set = 'placeholder'
