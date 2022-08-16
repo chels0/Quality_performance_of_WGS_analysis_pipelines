@@ -41,3 +41,8 @@ Run with command:
 > bash plotting_master.sh
 
 Modifications might need to be done to the plotting_master flags. 
+
+## Full report
+The full report done for this project can be found here:
+
+http://uu.diva-portal.org/smash/record.jsf?dswid=-7761&pid=diva2%3A1681925&c=1&searchType=SIMPLE&language=sv&query=chelsea+ramsin&af=%5B%5D&aq=%5B%5B%5D%5D&aq2=%5B%5B%5D%5D&aqe=%5B%5D&noOfRows=50&sortOrder=author_sort_asc&sortOrder2=title_sort_asc&onlyFullText=false&sf=all
