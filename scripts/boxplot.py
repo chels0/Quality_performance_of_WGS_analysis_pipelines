@@ -15,15 +15,16 @@ import seaborn as sns
 
 
 #Script for plotting QUAST metrics, one boxplot for each metric at different coverages
+#run with command: python3 path_to_script/boxplot.py flag1 flag2
+#where flag1 is the assembler compared to SPADes --isolate. Put Ske for SKESa or SpC for --careful
+#flag2 is the trimming option compared to Trimmomatic, put no_trim to plot no trimming compared to Trimmomatic or Fastp to compare Fastp to Trimmomatic
 #_____________________________________________________________________________________
 
-#directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables/placeholder/'
+
 directory = 'Results/chewbbaca_quast_tables/placeholder/'
 
 assembler_comp = sys.argv[1]
-#assembler_comp = 'SpC'
 trimming_software = sys.argv[2]
-#trimming_software = 'Fastp'
 
 
 
@@ -60,8 +61,6 @@ for filename in os.listdir(directory):
     list_of_files.append(filename)
 
 list_of_files.sort() #sort list
-
-
 
 
 count=0 #counter

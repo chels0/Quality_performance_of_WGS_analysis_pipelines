@@ -11,9 +11,9 @@ import pathlib
 #Thus the reference will have a row of zeroes representing a correct result
 #Assemblies with a type of 0 at loci is a correct allele calling
 
+#_______________________________________________________________________________________________________________
 
 directory = sys.argv[1]
-#directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/hu'
 
 
 #Define relevant columns to keep in dataframe
@@ -24,21 +24,12 @@ columns = ['# contigs', 'Largest contig', 'Total length', 'Reference length',
 #Loop through all files in cgMLST result
 for direct in os.listdir(directory):
     filename_chew = directory + '/' + direct + '/chewBBACA/cgMLST_results_jejuni/results_alleles.tsv'
-
-    #filename_chew = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/alleles/results_alleles1.tsv'
    
     df = pd.read_csv(filename_chew, sep='\t', index_col=0) #create tab separated dataframe
     df = df.applymap(str) #change dataframe to string
     
     df.index.name = 'Sample' #set Sample as index name of dataframe
     df.index = df.index.str.replace('.fasta','', regex=True) #remove .fasta from sample names
-    
-    # indices = df.index.str.split('_') #split sample names on underscores
-    
-    # ids = [] #empty list for sample IDs
-    # #Add sample IDs to list
-    # for values in indices:
-    #     ids.(values[0]) #append sample ID
     
     reference = df.iloc[[0],:] #get reference row, the first row of dataframe with all its columns
     reference = reference[[]] #empty the reference row
@@ -126,10 +117,6 @@ for direct in os.listdir(directory):
     df_quast_chew.replace('nan', '', inplace=True) #replace string nan with empty string
     name_of_run = df.index[1] #sample name
     name = name_of_run.split('x_') #split sample name
-    #name_of_run = name_of_run.split('_contigs')
-    
-    #if len(name_of_run) == 1:
-    #    name_of_run = name_of_run[0].split('_scaffolds')
    
     
     df_quast_chew.to_csv('Results/chewbbaca_quast_tables/'+ direct+'_results.tsv', sep='\t', encoding='utf-8') #save to csv with name of run

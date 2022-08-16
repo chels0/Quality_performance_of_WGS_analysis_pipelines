@@ -12,6 +12,12 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+#SCRIPT FOR PLOTTING CHEWBBACA DIFFERENCES
+#Run script with: # python3 path_to_script/plotting.py flag1 flag2
+# where flag1 is a number between 0-5 where 0 plots trimming results, 1 plots pilon results, 2 prints filtering 200 results,
+# 3 prints filtering 500 results and 4 prints combined Pilon and filtering
+# flag2 represents the assembler compared to SPAdes --isolate. Put Ske for SKESA or SpC for --careful. 
+
 directory = 'Results/Conclusions'
 
 #Define column names
@@ -20,12 +26,11 @@ corr = '# Corrections'
 wrong = '# Errors'
 change = '# Changes'
 
-list_ = ['Trimming', 'Pilon', 'Filtering 200', 'Pilon and Filtering'] #list of plots to be created
+list_ = ['Trimming', 'Pilon', 'Filtering 200', 'Filtering 500', 'Pilon and Filtering'] #list of plots to be created
 coverages = ['20x', '50x', '100x']
 
 list_index = sys.argv[1]
 to_plot = list_[int(list_index)] #choose which plot to plot
-#to_plot = list_[3]
 if to_plot != list_[0]:
     x_axis_label = 'Compared pipelines'
 else:

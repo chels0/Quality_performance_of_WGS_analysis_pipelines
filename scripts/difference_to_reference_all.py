@@ -6,6 +6,8 @@ Created on Mon May 23 15:25:39 2022
 @author: chelsea
 """
 
+#SCRIPT FOR FINDING THE AMOUNT OF ALLELE DIFFERENCES FOR EVERY PIPELINE FOR EVERY COVERAGE
+
 import pandas as pd
 import os
 

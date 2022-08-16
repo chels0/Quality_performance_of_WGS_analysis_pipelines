@@ -13,9 +13,12 @@ import itertools
 import pathlib
 import copy
 
-#name of directory
-#directory = sys.argv[1]
-#directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables/placeholder/'
+#SCRIPT FOR COMPARING CHEWBBACA RESULTS PAIRWISE
+#Run with command: # python3 path_to_script/reduce_chewbbaca_2.py flag1
+# where flag1 is assembler which is compared to spades --isolate. Put Ske for SKESA or SpC for Spades --careful.
+
+#___________________________________________________________________________________________________________________
+
 directory = 'Results/chewbbaca_quast_tables/placeholder/'
 
 list_of_files = []

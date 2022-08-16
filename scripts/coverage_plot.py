@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-#Script for plotting QUAST metrics, one boxplot for each metric at different coverages
+#Script for plotting the median QUAST metrics for every pipeline at different coverages
 #_____________________________________________________________________________________
 
 directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/chewbbaca_quast_tables/placeholder/'

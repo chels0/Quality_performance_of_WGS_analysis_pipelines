@@ -11,9 +11,9 @@ import os
 import itertools
 import pathlib
 
+#SCRIPT FOR SUMMARIZING DIFFERENCES BETWEEN PAIRWISE COMPARISONS 
 
 directory = 'Results/Comparisons/Chewbbaca_comparisons'
-#directory = '/mnt/bigdisk/Quality_performance_of_WGS_analysis_pipelines/Results/Comparisons/Chewbbaca_comparisons/'
 
 pathlib.Path('Results/Conclusions/').mkdir(parents=True, exist_ok=True) #Create path if non existant
 
