@@ -48,6 +48,10 @@ Example:
 
 bash running.sh -o /data/my_results
 
+# Changing parameters for workflow
+Change parameters in the file: parameter_settings.txt
+
+
 ## Plotting results
 Run with command:
 > bash plotting_master.sh
