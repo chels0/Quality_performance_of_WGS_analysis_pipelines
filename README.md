@@ -32,6 +32,10 @@ Install software with conda:
 
 > conda env create --file=scripts/config_files/conda_python_env_setup.yml
 
+
+## Changing/setting up parameters for workflow
+Change parameters in the file: parameter_settings.txt
+
 ## Running the workflow and all other scripts 
 
 Run all commands in the folder Quality_performance_of_WGS_analysis_pipelines/
@@ -47,9 +51,6 @@ Options:
 Example:
 
 bash running.sh -o /data/my_results
-
-# Changing parameters for workflow
-Change parameters in the file: parameter_settings.txt
 
 
 ## Plotting results
