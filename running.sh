@@ -61,7 +61,7 @@ do
 	cat $file >> log.txt
 
 	#Run pipeline	
-	nextflow pipeline7.nf -profile conda -resume
+	nextflow nextflow_pipeline.nf -profile conda -resume
 
 	#If outdir is not the Results folder in the pipeline directory, move the results to the wanted outdirectory
 
