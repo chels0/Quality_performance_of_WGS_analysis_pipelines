@@ -24,10 +24,12 @@ You will need to place the following files/folders in the folder Raw_data:
 
 ## Installation
 Clone git repository into your chosen directory.
+
 Run all commands in the folder Quality_performance_of_WGS_analysis_pipelines/
 
 Install software with conda:
 > conda env create --file=scripts/config_files/conda_env_setup.yml
+
 > conda env create --file=scripts/config_files/conda_python_env_setup.yml
 
 ## Running the workflow and all other scripts 
